@@ -7,8 +7,12 @@ struct Stack {
 };
 
 struct Stack * init_stack(struct Stack **stack);
+
+void push_stack(const char code, struct Stack **stack);
+void * determine_push(const char code);
 void push(struct Stack **stack, int num); 
 void push_sorted(struct Stack **stack, int num); 
+
 void delete_negatives(struct Stack **stack);
 void print_stack(struct Stack *stack);
 struct Stack * free_stack(struct Stack *stack);
@@ -16,15 +20,11 @@ struct Stack * free_stack(struct Stack *stack);
 int main(void) {
   int num = 0;
   struct Stack *stack;
-  
+
   init_stack(&stack);
-  while((scanf("%d", &num) != EOF)) {
-   push(&stack, num);
-  }
+  push_stack('p', &stack);
   print_stack(stack);
-  while((scanf("%d", &num) != EOF)) {
-   push_sorted(&stack, num);
-  }
+  push_stack('s', &stack);
   print_stack(stack);
   delete_negatives(&stack);
   print_stack(stack);
@@ -34,6 +34,31 @@ int main(void) {
 
 struct Stack * init_stack(struct Stack **stack) {
   *stack = NULL;
+}
+
+void push_stack(const char code, struct Stack **stack) {
+  int num;
+  void (*push) (struct Stack **stack, int num);
+  if (!(push = determine_push(code))) {
+    printf("Cannot push - wrong push flag!\n");
+    return;
+  }
+  while((scanf("%d", &num) != EOF)) {
+   push(stack, num);
+  }
+}
+
+void * determine_push(const char code) {
+  switch(code) {
+    case 'p':
+      return &push;
+      break;
+    case 's':
+      return &push_sorted;
+      break;
+    default:
+      return NULL;
+  }
 }
 
 void push(struct Stack **stack, int num) {
