@@ -13,9 +13,11 @@ void * determine_push(const char code);
 void push(struct Stack **stack, int num); 
 void push_sorted(struct Stack **stack, int num); 
 
+int pop(struct Stack **stack);
+
 void delete_negatives(struct Stack **stack);
 void print_stack(struct Stack *stack);
-struct Stack * free_stack(struct Stack *stack);
+void free_stack(struct Stack **stack);
 
 int main(void) {
   int num = 0;
@@ -28,12 +30,26 @@ int main(void) {
   print_stack(stack);
   delete_negatives(&stack);
   print_stack(stack);
-  stack = free_stack(stack);
+  pop(&stack);
+  print_stack(stack);
+  pop(&stack);
+  print_stack(stack);
+  free_stack(&stack);
   print_stack(stack);
 }
 
 struct Stack * init_stack(struct Stack **stack) {
   *stack = NULL;
+}
+
+int pop(struct Stack **stack) {
+  int n;
+  struct Stack *tmp;
+  n = (*stack)->data;
+  tmp = *stack;
+  (*stack)= (*stack)->next;
+  free(tmp);
+  return n;
 }
 
 void push_stack(const char code, struct Stack **stack) {
@@ -93,14 +109,13 @@ void print_stack(struct Stack *stack) {
   printf("\n");
 }
 
-struct Stack *  free_stack(struct Stack *stack) {
-  struct Stack *tmp = stack;
-  while (stack) {
-    tmp = stack;
-    stack = stack->next;
+void free_stack(struct Stack **stack) {
+  struct Stack *tmp;
+  while (*stack) {
+    tmp = *stack;
+    *stack = (*stack)->next;
     free(tmp);
   }
-  return NULL;
 }
 
 void delete_negatives(struct Stack **stack_ptr) {
