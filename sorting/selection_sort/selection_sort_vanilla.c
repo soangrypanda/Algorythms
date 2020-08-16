@@ -35,9 +35,8 @@ void slcn_srt_loop(int *arr, int arr_len) {
 }
 
 void print_arr(int *arr, int arr_len) {
-  for (int i = 0; i < arr_len; i++) {
+  for (int i = 0; i < arr_len; i++) 
     printf("%i ", arr[i]);
-  }
   printf("\n");
 }
 
