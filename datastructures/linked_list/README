@@ -1,1 +1,4 @@
-This is an example of stack implemented via singly-linked list.
+These are examples of the following objects implemented with the singly list datastucture:
+  1) Stack;
+  2) Queue.
+The programs provide functionality for regular push/put and pop/get operations, as well as sorted push/put, deletion of negative numbers, free and print of an object.
