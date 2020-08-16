@@ -14,6 +14,9 @@ struct Q {
 void init_q(struct Q *q);
 void put(struct Q *q, int num);
 void put_s(struct Q *q, int num);
+void put_q(struct Q *q, const char code);
+void *determine_put(const char code, struct Q *q);
+
 int get(struct Q *q);
 void print_q(struct Q q);
 void delete_negatives(struct Q *q);
@@ -24,21 +27,17 @@ int main(void) {
   struct Q q;
   init_q(&q);
 
-  while (scanf("%d", &num) != EOF) {
-    put(&q, num);
-  }
+  put_q(&q, 's');
   print_q(q);
 
   delete_negatives(&q);
   print_q(q);
 
-  while (scanf("%d", &num) != EOF) {
-    put_s(&q, num);
-  }
-
+  put_q(&q, 'p');
+  print_q(q);
+  
   get(&q);
   print_q(q);
-
   get(&q);
   print_q(q);
 
@@ -48,6 +47,30 @@ int main(void) {
 
 void init_q(struct Q *q) {
   q->head = NULL;
+}
+
+void put_q(struct Q *q, const char code) {
+  int num;
+  void (*put) (struct Q *q, int num);
+  put = determine_put(code, q);
+  if (!put) {
+    printf("Error - wrong put code!\n");
+    return;
+  }
+  while (scanf("%d",&num) != EOF) {
+    put(q, num);
+  }
+}
+
+void *determine_put(const char code, struct Q *q) {
+  switch(code) {
+    case 'p':
+      return &put;
+    case 's':
+      return &put_s;
+    default:
+      return NULL;
+  }
 }
 
 void put(struct Q *q, int num) {
@@ -66,7 +89,24 @@ void put(struct Q *q, int num) {
 }
 
 void put_s(struct Q *q, int num) {
-  
+  if (q->head == NULL) {
+    put(q, num);
+    return;
+  }
+  struct node **pp = &q->head;
+  struct node *tmp;
+  while (1) {
+    if (((*pp) == NULL) || ((*pp)->data > num)) {
+      tmp = malloc(sizeof(struct node));
+      tmp->data = num;
+      tmp->next = (*pp);
+      (*pp) = tmp;
+      return;
+    }
+    else {
+      pp = &(*pp)->next;
+    }
+  }
 }
 
 int get(struct Q *q) {
