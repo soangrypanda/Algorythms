@@ -13,6 +13,8 @@ struct deck {
 };
 
 void init_deck(struct deck *deck);
+int check_code(const char *code);
+int push(struct deck *deck, const char *code, int num);
 void push_left(struct deck *deck, struct node *cur, int num);
 void push_right(struct deck *deck, struct node *cur, int num);
 void print_deck(struct deck deck);
@@ -24,16 +26,53 @@ int main(void) {
   init_deck(&deck);
 
   while (scanf("%d", &num) == 1)
-    push_left(&deck, deck.head, num);
+    push(&deck, "l", num);
   print_deck(deck);
   while (scanf("%d", &num) == 1)
-    push_right(&deck, deck.tail, num);
+    push(&deck, "r", num);
   print_deck(deck);
+  
+  
+
 }
 
 void init_deck(struct deck *deck) {
   deck->head = NULL;
   deck->tail = deck->head;
+}
+
+int push(struct deck *deck, const char *code, int num) {
+  int check = check_code(code);
+    
+  switch (check) {
+    case 108: /*l*/
+      push_left(deck, deck->head, num);
+      return 0;
+    case 114: /*r*/
+      push_right(deck, deck->tail, num);
+      return 0;
+    case 223: /*ls*/
+      return 0;
+    case 229: /*rs*/
+      return 0;  
+    case -1:
+      fprintf(stderr, "push error: code shall be of 1 or 2 chars!\n");
+      return -1;
+    case 0:
+      fprintf(stderr, "push error: flags: l, r, sl or sr\n");
+      return -1;  
+  }
+}
+
+int check_code(const char *code) {
+  int i = 0;
+  int check = 0;
+  for ( ; code[i]; i++) {
+    check += code[i];
+  }
+  if (i != 1 && i != 2)
+    return -1;
+  return check;
 }
 
 void push_left(struct deck *deck, struct node *cur, int num) {
