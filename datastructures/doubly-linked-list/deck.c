@@ -14,6 +14,7 @@ struct deck {
 
 void init_deck(struct deck *deck);
 int check_code(const char *code);
+struct node * find_pos_left(struct node *deck, int num);
 int push(struct deck *deck, const char *code, int num);
 void push_left(struct deck *deck, struct node *cur, int num);
 void push_right(struct deck *deck, struct node *cur, int num);
@@ -26,10 +27,10 @@ int main(void) {
   init_deck(&deck);
 
   while (scanf("%d", &num) == 1)
-    push(&deck, "l", num);
+    push(&deck, "ls", num);
   print_deck(deck);
   while (scanf("%d", &num) == 1)
-    push(&deck, "r", num);
+    push(&deck, "ls", num);
   print_deck(deck);
   
   
@@ -43,7 +44,8 @@ void init_deck(struct deck *deck) {
 
 int push(struct deck *deck, const char *code, int num) {
   int check = check_code(code);
-    
+  struct node *pos;  
+
   switch (check) {
     case 108: /*l*/
       push_left(deck, deck->head, num);
@@ -52,6 +54,13 @@ int push(struct deck *deck, const char *code, int num) {
       push_right(deck, deck->tail, num);
       return 0;
     case 223: /*ls*/
+      if (!deck->tail || deck->tail->data < num) {
+        push_right(deck, deck->tail, num);
+      }
+      else {
+        pos = find_pos_left(deck->head, num);
+        push_left(deck, pos, num);
+      }
       return 0;
     case 229: /*rs*/
       return 0;  
@@ -61,9 +70,22 @@ int push(struct deck *deck, const char *code, int num) {
     case 0:
       fprintf(stderr, "push error: flags: l, r, sl or sr\n");
       return -1;  
+    default:
+      return -1;
   }
 }
 
+struct node * find_pos_left(struct node *deck, int num) {
+  if (!deck) {
+    return deck;
+  }
+  while (deck) {
+    if (deck->data > num)
+      break;
+    deck = deck->next;
+  }
+  return deck;
+}
 int check_code(const char *code) {
   int i = 0;
   int check = 0;
