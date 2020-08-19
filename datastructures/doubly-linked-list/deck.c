@@ -15,11 +15,11 @@ struct deck {
 void init_deck(struct deck *deck);
 int check_code(const char *code);
 struct node * find_pos_left(struct node *deck, int num);
+struct node * find_pos_right(struct node *deck, int num);
 int push(struct deck *deck, const char *code, int num);
 void push_left(struct deck *deck, struct node *cur, int num);
 void push_right(struct deck *deck, struct node *cur, int num);
 void print_deck(struct deck deck);
-
 
 int main(void) {
   struct deck deck;
@@ -27,10 +27,10 @@ int main(void) {
   init_deck(&deck);
 
   while (scanf("%d", &num) == 1)
-    push(&deck, "ls", num);
+    push(&deck, "rs", num);
   print_deck(deck);
   while (scanf("%d", &num) == 1)
-    push(&deck, "ls", num);
+    push(&deck, "rs", num);
   print_deck(deck);
   
   
@@ -63,7 +63,14 @@ int push(struct deck *deck, const char *code, int num) {
       }
       return 0;
     case 229: /*rs*/
-      return 0;  
+      if (!deck->head || deck->head->data < num) {
+        push_left(deck, deck->head, num);
+      }
+      else {
+        pos = find_pos_right(deck->tail, num);
+        push_right(deck, pos, num);
+      }
+      return 0;
     case -1:
       fprintf(stderr, "push error: code shall be of 1 or 2 chars!\n");
       return -1;
@@ -80,12 +87,25 @@ struct node * find_pos_left(struct node *deck, int num) {
     return deck;
   }
   while (deck) {
-    if (deck->data > num)
+    if (deck->data >= num)
       break;
     deck = deck->next;
   }
   return deck;
 }
+
+struct node * find_pos_right(struct node *deck, int num) {
+  if (!deck) {
+    return deck;
+  }
+  while (deck) {
+    if (deck->data >= num)
+      break;
+    deck = deck->prev;
+  }
+  return deck;
+}
+
 int check_code(const char *code) {
   int i = 0;
   int check = 0;
