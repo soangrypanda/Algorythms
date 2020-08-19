@@ -20,6 +20,7 @@ int push(struct deck *deck, const char *code, int num);
 void push_left(struct deck *deck, struct node *cur, int num);
 void push_right(struct deck *deck, struct node *cur, int num);
 void print_deck(struct deck deck);
+void free_deck(struct deck *deck);
 
 int main(void) {
   struct deck deck;
@@ -30,11 +31,11 @@ int main(void) {
     push(&deck, "rs", num);
   print_deck(deck);
   while (scanf("%d", &num) == 1)
-    push(&deck, "rs", num);
+    push(&deck, "ls", num);
   print_deck(deck);
   
-  
-
+  free_deck(&deck);
+  return 0;
 }
 
 void init_deck(struct deck *deck) {
@@ -74,11 +75,9 @@ int push(struct deck *deck, const char *code, int num) {
     case -1:
       fprintf(stderr, "push error: code shall be of 1 or 2 chars!\n");
       return -1;
-    case 0:
-      fprintf(stderr, "push error: flags: l, r, sl or sr\n");
-      return -1;  
     default:
-      return -1;
+      fprintf(stderr, "push error: flags to use - l, r, sl or sr!\n");
+      return -1;  
   }
 }
 
@@ -162,4 +161,15 @@ void print_deck(struct deck deck) {
   }
   printf("\n");
   fclose(f);
+}
+
+void free_deck(struct deck *deck) {
+  struct node *tmp;
+  while (deck->head) {
+    tmp = deck->head;
+    deck->head = deck->head->next;
+    free(tmp);
+  }
+  deck->head = NULL;
+  deck->tail = NULL;
 }
