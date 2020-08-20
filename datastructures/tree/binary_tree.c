@@ -13,6 +13,9 @@ int push_tree(struct node **node_ptr, int num);
 void fill_tree(struct node **node_ptr);
 void print_tree(struct node *node);
 void print_tr_recur(struct node *node);
+void free_tree(struct node **node_ptr);
+
+void is_in_tree(struct node **node_ptr);
 
 int main(void) {
   struct node *root;
@@ -20,6 +23,11 @@ int main(void) {
   init_tree(&root);
   
   fill_tree(&root);
+  print_tree(root);
+
+  is_in_tree(&root);
+
+  free_tree(&root);
   print_tree(root);
 
 }
@@ -65,8 +73,22 @@ void fill_tree(struct node **node_ptr) {
   }
 }
 
+void is_in_tree(struct node **node_ptr) {
+  struct node **in_tree;
+  int num;
+
+  while(scanf("%d", &num) == 1) {
+    in_tree = search_tree(node_ptr, num);
+    if ((*in_tree))
+      printf("Yes!\n");
+    else
+      printf("No!\n");
+  }
+}
+
 void print_tree(struct node *node) {
-  print_tr_recur(node);
+  if (node)
+    print_tr_recur(node);
   printf("\n");
 }
 
@@ -78,5 +100,17 @@ void print_tr_recur(struct node *node) {
     print_tr_recur(node ->left);
     printf("%d ", node->data);
     print_tr_recur(node ->right); 
+  }
+}
+
+void free_tree(struct node **node_ptr) {
+  if (!(*node_ptr)) {
+    return;
+  }
+  else {
+    free_tree(&(*node_ptr)->left);
+    free_tree(&(*node_ptr)->right);
+    free((*node_ptr));
+    (*node_ptr) = NULL;
   }
 }
