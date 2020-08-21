@@ -1,3 +1,5 @@
+/* comments are for future me that whould work on clav */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,6 +9,9 @@ struct node {
   struct node *right;
 };
 
+/* consider using const ptrptr in functions,
+at least at fill_tree and is_in_tree */
+
 void init_tree(struct node **root);
 struct node ** search_tree(struct node **node, int num);
 int push_tree(struct node **node_ptr, int num);
@@ -14,7 +19,6 @@ void fill_tree(struct node **node_ptr);
 void print_tree(struct node *node);
 void print_tr_recur(struct node *node);
 void free_tree(struct node **node_ptr);
-
 void is_in_tree(struct node **node_ptr);
 
 int main(void) {
@@ -29,7 +33,7 @@ int main(void) {
 
   free_tree(&root);
   print_tree(root);
-
+/* always altering between root and &root is messy */
 }
 
 void init_tree(struct node **root) {
