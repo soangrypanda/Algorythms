@@ -20,10 +20,13 @@ void print_tree(struct node *node);
 void print_tr_recur(struct node *node);
 void free_tree(struct node **node_ptr);
 void is_in_tree(struct node **node_ptr);
+int find_tree_height(int *h, struct node *node);
+int hight_recur(int cur_h, struct node *node);
 
 int main(void) {
   struct node *root;
   int num;
+  int height;
   init_tree(&root);
   
   fill_tree(&root);
@@ -31,9 +34,12 @@ int main(void) {
 
   is_in_tree(&root);
 
+  find_tree_height(&height, root);
+  printf("Tree height is %d.\n", height);
+
   free_tree(&root);
   print_tree(root);
-/* always altering between root and &root is messy */
+  /* always altering between root and &root is messy */
 }
 
 void init_tree(struct node **root) {
@@ -117,4 +123,25 @@ void free_tree(struct node **node_ptr) {
     free((*node_ptr));
     (*node_ptr) = NULL;
   }
+}
+
+int find_tree_height(int *h, struct node *node) {
+  *h = 0;
+  int tmp_h = 0;
+  *h = hight_recur(tmp_h, node);
+  return 0;
+}
+
+int hight_recur(int cur_h, struct node *node) {
+  int left;
+  int right;
+  if (!node)
+    return cur_h;
+  cur_h++;
+  left = hight_recur(cur_h, node->left);
+  right = hight_recur(cur_h, node->left);
+  if (left > right)
+    return left;
+  else
+    return right;
 }
