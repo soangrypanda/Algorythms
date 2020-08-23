@@ -50,7 +50,7 @@ struct node ** search_tree(struct node **node, int num) {
   if (!(*node) || (*node)->data == num) {
     return node;
   }
-  else if ((*node)->data < num) {
+  else if ((*node)->data > num) {
     return search_tree(&(*node)->left,  num);
   }
   else {
