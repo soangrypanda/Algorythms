@@ -139,7 +139,7 @@ int hight_recur(int cur_h, struct node *node) {
     return cur_h;
   cur_h++;
   left = hight_recur(cur_h, node->left);
-  right = hight_recur(cur_h, node->left);
+  right = hight_recur(cur_h, node->right);
   if (left > right)
     return left;
   else
