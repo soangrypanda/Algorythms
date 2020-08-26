@@ -2,7 +2,7 @@
 
 void print_arr(int *arr, int len);
 void qs(int *arr, int lo, int hi);
-int pivot(int *arr, int lo, int hi);
+int partition(int *arr, int lo, int hi);
 void swap(int *i, int *j);
 
 int main(void) {
@@ -31,34 +31,26 @@ void qs(int *arr, int lo, int hi) {
   }
   else {
     int p;
-    p = pivot(arr, lo, hi);
+    p = partition(arr, lo, hi);
     qs(arr, lo, p);
     qs(arr, p+1, hi);
   }
 }
 
-int pivot(int *arr, int lo, int hi) {
+int partition(int *arr, int lo, int hi) {
   int i, j, p;
   p = lo;
   i = p;
   j = p + 1;
-  printf("lo is %d and hi is %d\n", lo, hi);
 
   for ( ; j < hi; j++) {
-    printf("pivot is: %d and i is %d and j is %d\n", p, i, j);
-    print_arr(arr, 10);
     if (arr[j] < arr[p]) {
-      printf("SWAP %d and %d\n", j, i+1);
       swap(&arr[j], &arr[i+1]);
       i++;
     }
   }
-  printf("pivot is: %d and i is %d\n", p, i);
   swap(&arr[p], &arr[i]);
-  print_arr(arr, 10);
   p = i;
-  printf("pivot is: %d and i is %d\n", p, i);
-  printf("\n");
   return p;
 }
 
