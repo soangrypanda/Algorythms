@@ -1,1 +1,4 @@
-WORK IN PROGRESS
+These are implementations of the following variations of quick sort:
+  1) Vanilla quick sort:
+    a) qs_vanilla_l.c - pivot is a leftmost element of a subarray;
+    b) qs_vanilla_r.c - pivot is a rightmost element of a subarray, almost identical to qs_vanilla_l.c, minor tweaks in partition() made.
