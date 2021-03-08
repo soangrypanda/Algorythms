@@ -12,8 +12,8 @@ struct node *left_rotate( struct node *np, uint32_t entry);
 struct node *right_rotate(struct node *np, uint32_t entry);
 
 struct node {
-	int32_t 	data;
-	int32_t 	height;
+	int32_t			data;
+	int32_t			height;
 	struct node 	*left, *right, *parent;
 };
 
@@ -141,9 +141,9 @@ find_max(struct node* np)
 }
 
 struct node*
-get_max(struct node** npp)
+get_max(struct node* np)
 {
-	return find_max(*npp);
+	return find_max(np);
 }
 
 struct node *
@@ -154,19 +154,22 @@ find_min(struct node* np)
 }
 
 struct node*
-get_min(struct node** npp)
+get_min(struct node* np)
 {
-	return find_min(*npp);
+	return find_min(np);
 }
 
 struct node*
 find_next_larger(struct node *np)
 {
+	/*cheks if the node is a dummy*/
+	if(!np->parent)	np = np->left;
+
 	if(np->right)	return find_min(np->right);	
 
 	int32_t	    tmp_d  = np->data;
 	struct node *tmp_p = np;
-	while(tmp_p->parent) {
+	while(tmp_p->parent->parent) {
 		tmp_p	  = tmp_p->parent;
 		if(tmp_p->data > tmp_d)	return tmp_p;
 	}
@@ -177,11 +180,14 @@ find_next_larger(struct node *np)
 struct node*
 find_next_lesser(struct node *np)
 {
+	/*cheks if the node is a dummy*/
+	if(!np->parent)	np = np->left;
+
 	if(np->left)	return find_max(np->left);	
 
 	int32_t     tmp_d  = np->data;
 	struct node *tmp_p = np;
-	while(tmp_p->parent) {
+	while(tmp_p->parent->parent) {
 		tmp_p	  = tmp_p->parent;
 		if(tmp_p->data < tmp_d)	return tmp_p;
 	}
@@ -189,35 +195,44 @@ find_next_lesser(struct node *np)
 	return np;
 }
 
-struct node *pop_node(struct node **npp);
-struct node* pop_node_do(struct node **npp, int32_t rec_level);
+struct node *pop_node(struct node *np);
+struct node* pop_node_do(struct node *np, int32_t rec_level);
 void
-delete(struct node **npp)
+delete(struct node *np)
 {
-	free(pop_node(npp));
+	/*checks if the node is a dummy node*/
+	if(!np->parent)	np = np->left;
+	free(pop_node(np));
 }
 
 void
 handle_tree_recalc(struct node* start, struct node *end)
 {
+	struct node* parent = NULL;
 	printf("Entering handle_tree_recalc\n");
 	while(start != end) {
 		set_height(start);
+		parent = start->parent;
 		start = handle_balance(start);
+		
+		if(!parent)								break;
+		else if	   (!parent->parent)			parent->left = parent->right = start;
+		else if(start->data > parent->data)	parent->right = start;
+		else if(start->data < parent->data)	parent->left  = start;
 		start = start->parent;
 	}
 }
 
 struct node*
-pop_node(struct node **npp)
+pop_node(struct node *np)
 {
-	return pop_node_do(npp, 0);
+	return pop_node_do(np, 0);
 }
 
 struct node*
-pop_node_do(struct node **npp, int32_t rec_level)
+pop_node_do(struct node *np, int32_t rec_level)
 {
-	struct node *np		     = *npp;
+	//struct node *np		     = *npp;
 	struct node *np_par  	     = np->parent;
 	struct node *node_instead_np = NULL;
 	struct node *next_larger     = NULL;
@@ -247,12 +262,12 @@ pop_node_do(struct node **npp, int32_t rec_level)
 	
 	set_as_parent(node_instead_np);
 
-	if	(!np_par)			*npp	      = node_instead_np;
+	if	(!np_par->parent)		np_par->left = np_par->right = node_instead_np;
 	else if	(np_par->data > np->data)	np_par->left  = node_instead_np;
 	else					np_par->right = node_instead_np;
 
 	/* no way next_larger can be root, so won't bother with a NULL parent */
-	if    	(next_larger)		free(pop_node_do(&next_larger, rec_level + 1));
+	if    	(next_larger)		free(pop_node_do(next_larger, rec_level + 1));
 
 	if	(rec_level != 0)	node_to_end_recalc_at = np_par;
 
@@ -272,8 +287,8 @@ print_all(struct node *np)
 	printf("next min is %" PRId32 " and next max is %" PRId32 " ", 
 			find_next_lesser(np)->data, find_next_larger(np)->data);
 
-	if(np->parent)	printf("parent data is %" PRId32 "\n", np->parent->data);
-	else		printf("root\n");
+	if(!np->parent->parent)	printf("root\n");
+	else			printf("parent data is %" PRId32 "\n", np->parent->data);
 
 	print_all(np->right);
 };
@@ -294,16 +309,24 @@ invariant_holds(struct node *np)
 }
 
 void
-check_invariant(struct node **npp)
+check_invariant(struct node *np)
 {
-	if(invariant_holds(*npp))	puts("INVARIANT HOLDS!");
+	if(invariant_holds(np->left))	puts("INVARIANT HOLDS!");
 	else				puts("INVARIAN DOES NOT HOLD!");		
 }
 
+struct node*
+init_tree(struct node* np)
+{
+	struct node *dummy = create_node(0);
+	return dummy;
+}
+
 #define AVL_TREE 		struct node *
-#define init_avl_tree(X) 	AVL_TREE X_root = NULL; AVL_TREE *X = &X_root
-#define insert_node(D, N) 	*N = insert((D), *N)
-#define print_tree(X)		do { puts("Printing tree..."); print_all(*X); printf("\n"); } while(0)
+#define init_avl_tree(X) 	AVL_TREE X = init_tree((X));
+//#define init_avl_tree(X) 	AVL_TREE X_root = NULL; AVL_TREE *X = &X_root
+#define insert_node(D, N) 	N->left = N->right = insert((D), N->left); set_as_parent(N)
+#define print_tree(X)		do { puts("Printing tree..."); print_all(X->left); printf("\n"); } while(0)
 
 
 /* using a normal random function is not a purporse of
@@ -338,17 +361,17 @@ int main(void)
 
 
 	print_tree(tree);
-	printf("%" PRId32 "\n", (*tree)->data);
+	printf("%" PRId32 "\n", tree->left->data);
 	check_invariant(tree);
 	printf("%" PRId32 " %" PRId32 "\n", get_max(tree)->data, get_min(tree)->data);
 
 	struct node* min = get_min(tree);
-	delete(&min);
+	delete(min);
 	print_tree(tree);
 	check_invariant(tree);
 		
 	struct node* max = get_max(tree);
-	delete(&max);
+	delete(max);
 	print_tree(tree);
 	check_invariant(tree);
 
