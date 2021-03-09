@@ -23,23 +23,26 @@ AVL_NODE_P	handle_balance	(AVL_NODE_P np);
 /*
  * TREE INTERNAL INTERFACE
  */
+AVL_TREE	init_avl_tree	(AVL_TREE tree);
 AVL_NODE_P	insert			(int32_t d, AVL_NODE_P np);
 AVL_NODE_P	right_rotate	(AVL_NODE_P np);
 AVL_NODE_P	left_rotate		(AVL_NODE_P np);
 AVL_NODE_P	find_max		(AVL_NODE_P np);
 AVL_NODE_P	find_min		(AVL_NODE_P np);
+void		delete_tree_do	(AVL_NODE_P np);
 AVL_NODE_P	pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level);
 void		handle_tree_recalc(AVL_NODE_P start, AVL_NODE_P end, AVL_TREE tree);
 /*
  * MISCELANEOUS INTERNAL INTERFACE
  */
-void		print_do		(AVL_NODE_P np);
+enum print_tree_flags {PLAIN, VERBOSE};
+void		print_do		(AVL_NODE_P np, int32_t flag);
 int32_t		invariant_holds	(AVL_NODE_P np);
 
 
-/********************
+/*******************
  * IMPLEMENTATIONS *
-********************/
+ *******************/
 
 /*
  * NODE
@@ -56,8 +59,14 @@ struct node {
 AVL_NODE_P 
 create_node(int32_t d)
 {
-	printf("Creating node...\n");
+	#ifdef DEBUG
+		printf("Creating node...\n");
+	#endif
 	AVL_NODE_P np = calloc(1, sizeof(*np));
+	if(!np) {
+		perror("create_node()");
+		exit(EXIT_FAILURE);
+	}
 	np->data = d; np->left = np->right = np->parent = NULL; 
 	return np;
 }
@@ -102,8 +111,10 @@ get_balance(AVL_NODE_P np)
 AVL_NODE_P
 handle_balance(AVL_NODE_P np)
 {
-	int32_t b = get_balance(np);  
-	printf("balance is - %" PRId32 "\n", b);
+	int32_t b = get_balance(np);
+	#ifdef DEBUG
+		printf("balance is - %" PRId32 "\n", b);
+	#endif
 
 	if 		( b >  1 ) {np = right_rotate(np); recalc_height(np); set_as_parent(np);}
 	else if ( b < -1 ) {np = left_rotate(np);  recalc_height(np); set_as_parent(np);}
@@ -130,6 +141,13 @@ delete_node(AVL_TREE tree, AVL_NODE_P np)
 	free(pop_node(tree, np));
 }
 
+void
+delete_tree(AVL_TREE tree)
+{
+	delete_tree_do(*tree);
+	*tree = NULL;
+}
+
 AVL_NODE_P
 pop_node(AVL_TREE tree, AVL_NODE_P np)
 {
@@ -146,6 +164,18 @@ AVL_NODE_P
 get_min(AVL_TREE tree)
 {
 	return find_min(*tree);
+}
+
+AVL_NODE_P
+get_node(AVL_TREE tree, int32_t key)
+{
+	AVL_NODE_P np = *tree;
+	while(np) {
+		if		(key < np->data)	np = np->left;
+		else if	(key > np->data) 	np = np->right;
+		else						break;
+	}
+	return np;
 }
 
 AVL_NODE_P 
@@ -182,24 +212,41 @@ find_next_lesser(AVL_NODE_P np)
 
 /* INTERNAL TREE INTERFACE IMPLEMENTATION */
 
+AVL_TREE
+init_avl_tree(AVL_TREE tree)
+{
+	/* allocates memory for initial AVL_NODE_P.
+	 * just want to have one function to init
+	 * new tree, and macro is not an option as
+	 * do-while loop hides a tree's keyword. */
+	AVL_TREE root = calloc(1, sizeof(*root));
+	return root;
+}
+
 AVL_NODE_P 
 insert(int32_t d, AVL_NODE_P np)
 {
-	printf("Entering insert...\n");
+	#ifdef DEBUG
+		printf("Entering insert...\n");
+	#endif
 	if		(!np)			np		  = create_node(d);	
 	else if	(d < np->data)	np->left  = insert(d, np->left);
 	else if	(d > np->data) 	np->right = insert(d, np->right);	
 	else					;
-
-	printf("insert() after first if - data is %" PRId32 "\n", np->data);
+	
+	#ifdef DEBUG
+		printf("insert() after first if - data is %" PRId32 "\n", np->data);
+	#endif
 
 	set_height(np);
 	set_as_parent(np);
 	np = handle_balance(np);
 
-	int32_t b = get_balance(np);  
-	printf("balance after rotation is - %" PRId32 "\n", b);
-	printf("insert() end  - data is %" PRId32 "\n", np->data);
+	#ifdef DEBUG
+		int32_t b = get_balance(np);  
+		printf("balance after rotation is - %" PRId32 "\n", b);
+		printf("insert() end  - data is %" PRId32 "\n", np->data);
+	#endif
 	
 	return np;
 };
@@ -207,7 +254,9 @@ insert(int32_t d, AVL_NODE_P np)
 AVL_NODE_P 
 right_rotate(AVL_NODE_P np)
 {
-	puts("Entering right_rotate...");
+	#ifdef DEBUG
+		puts("Entering right_rotate...");
+	#endif
 	
 	if(get_balance(np->left) < 0)
 		np->left = left_rotate(np->left);
@@ -226,7 +275,9 @@ right_rotate(AVL_NODE_P np)
 AVL_NODE_P 
 left_rotate(AVL_NODE_P np)
 {
-	puts("Entering left_rotate...");
+	#ifdef DEBUG
+		puts("Entering left_rotate...");
+	#endif
 
 	if(get_balance(np->right) > 0)
 		np->right = right_rotate(np->right);
@@ -256,6 +307,16 @@ find_min(AVL_NODE_P np)
 	else			return find_min(np->left);
 }
 
+void
+delete_tree_do(AVL_NODE_P np)
+{
+	if(!np)	return;
+	
+	delete_tree_do(np->left);
+	delete_tree_do(np->right);
+	free(np);
+}
+
 AVL_NODE_P 
 pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level)
 {
@@ -278,7 +339,7 @@ pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level)
 	}
 	else {
 		next_larger		= find_next_larger(np);
-		node_instead_np = calloc(1, sizeof(*node_instead_np));
+		node_instead_np = create_node(0);
 		memcpy(node_instead_np, next_larger, sizeof(node_instead_np));
 		node_instead_np->left	= np->left;	
 		node_instead_np->right	= np->right;	
@@ -298,7 +359,10 @@ pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level)
 
 	if		(rec_level != 0)	node_to_end_recalc_at = np_par;
 
-	printf("recursion level is %" PRId32 "\n", rec_level);
+	#ifdef DEBUG
+		printf("recursion level is %" PRId32 "\n", rec_level);
+	#endif
+	
 	handle_tree_recalc(node_to_start_recalc_from, node_to_end_recalc_at, tree);
 
 	np->parent = np->left = np->right = NULL;
@@ -308,7 +372,9 @@ pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level)
 void
 handle_tree_recalc(AVL_NODE_P start, AVL_NODE_P end, AVL_TREE tree)
 {
-	printf("Entering handle_tree_recalc...\n");
+	#ifdef DEBUG
+		printf("Entering handle_tree_recalc...\n");
+	#endif
 	
 	AVL_NODE_P cur_np = start;
 	while(cur_np != end) {
@@ -330,28 +396,35 @@ handle_tree_recalc(AVL_NODE_P start, AVL_NODE_P end, AVL_TREE tree)
 /* PRINT TREE */
  
 void
-print_tree(AVL_TREE tree)
+print_tree(AVL_TREE tree, int32_t flag)
 {
+	if(!*tree) {
+		puts("No tree to print!");
+		return;
+	}
 	puts("Printing tree..."); 
-	print_do(*tree); 
+	print_do(*tree, flag); 
 	puts("");
 }
 
+
 void
-print_do(AVL_NODE_P np)
+print_do(AVL_NODE_P np, int32_t flag)
 {
 	if(!np) { return; }
 	
-	print_do(np->left);
+	print_do(np->left, flag);
 	
 	printf("%" PRId32 " ", np->data);
-	printf("next min is %" PRId32 " and next max is %" PRId32 " ", 
-			find_next_lesser(np)->data, find_next_larger(np)->data);
-
-	if(np->parent)	printf("parent data is %" PRId32 "\n", np->parent->data);
-	else		printf("root\n");
-
-	print_do(np->right);
+	
+	if(flag == VERBOSE) {
+		printf("next min is %" PRId32 " and next max is %" PRId32 " ", 
+				find_next_lesser(np)->data, find_next_larger(np)->data);
+		if(np->parent)	printf("parent data is %" PRId32 "\n", np->parent->data);
+		else			printf("root\n");
+	}
+	
+	print_do(np->right, flag);
 };
 
 /* INVARIANT CHECK */
@@ -404,7 +477,7 @@ get_rand_num(int32_t l, int32_t h)
 int main(void)
 {
 	init_rand();
-	init_avl_tree(tree);
+	new_avl_tree(tree);
 
 	uint32_t inp_nums[INPUT_SIZE];
 	/* one good input set */
@@ -417,23 +490,32 @@ int main(void)
 	}
 
 
-	print_tree(tree);
+	print_tree(tree, VERBOSE);
 	printf("%" PRId32 "\n", (*tree)->data);
 	check_invariant(tree);
 	printf("%" PRId32 " %" PRId32 "\n", get_max(tree)->data, get_min(tree)->data);
 
 	AVL_NODE_P  min = get_min(tree);
 	delete_node(tree, min);
-	print_tree(tree);
+	print_tree(tree, PLAIN);
 	check_invariant(tree);
 		
 	AVL_NODE_P  max = get_max(tree);
 	delete_node(tree, max);
-	print_tree(tree);
+	print_tree(tree, PLAIN);
 	check_invariant(tree);
 
 	delete_node(tree, *tree);
-	print_tree(tree);
+	print_tree(tree, PLAIN);
 	check_invariant(tree);
-
+	
+	AVL_NODE_P np = get_node(tree, 14);
+	printf("Data is %" PRId32 "\n", np ? np->data : -1);
+	np = get_node(tree, 97);
+	printf("Data is %" PRId32 "\n", np ? np->data : -1);
+	np = get_node(tree, 58);
+	printf("Data is %" PRId32 "\n", np ? np->data : -1);
+	
+	delete_tree(tree);
+	print_tree(tree, PLAIN);
 }
