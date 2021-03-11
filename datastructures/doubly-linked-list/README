@@ -1,3 +1,0 @@
-These are examples of the following objects implemented with the doubly-linked list datastucture:
-  1) Deque.
-The program provides functionality for push and push into sorted list, where exact action is determined by a flag casted into push() function (l, r, ls, rs).
