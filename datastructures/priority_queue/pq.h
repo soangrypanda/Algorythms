@@ -16,7 +16,7 @@ struct pq;
 #define		new_pq(pq, size)	PQ_P pq = init_pq((size))
 PQ_P		init_pq				(size_t size);
 
-PQ			build_max_heap		(PQ_DATA_P array, size_t arr_len);
+PQ_P		build_max_heap		(PQ_DATA_P *array, size_t arr_len);
 
 PQ_P		insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, key_t priority);
 PQ_DATA_P	peek_max_pq			(PQ_P pqp);
@@ -24,4 +24,4 @@ PQ_DATA_P	peek_max_pq			(PQ_P pqp);
 char		is_empty			(PQ_P pqp);
 
 
-PQ			max_headpify		(PQ_DATA_P dp, size_t parent);
+PQ_P		max_headpify		(PQ_P pqp, size_t index);
