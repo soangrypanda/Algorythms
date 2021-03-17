@@ -4,7 +4,13 @@
 #define	PQ_DATA		struct pq_data
 #define PQ_DATA_P	PQ_DATA *
 #define	PQ			struct pq
-#define S
+#define	PQ_P		PQ*
+#define key_t		uint32_t
+#define PRIKEY		PRIu32
+#define DEF_PQ_SIZE	100
+
+struct pq_data;
+struct pq;
 
 
 #define		new_pq(pq, size)	PQ_P pq = init_pq((size))

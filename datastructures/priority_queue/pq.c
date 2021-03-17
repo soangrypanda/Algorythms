@@ -67,25 +67,29 @@ init_pq (size_t size)
 PQ_P
 insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, key_t priority)
 {
+	printf("\n   ENTERING insert_into_max_heap\n");
 	PQ_DATA_P *pq_arr	= pqp->pq;
 	size_t size			= pqp->pq_size;
 	size_t lf			= pqp->last_free;
 
 	//if(new_last >= size)	realloc_pq;
 	
-	PQ_DATA_P data_p	= create_data(data, data_size, priority);
-	pq_arr[lf]			= data_p;
+	pq_arr[lf]			= create_data(data, data_size, priority);
 	lf 					= ++pqp->last_free;
 	
 	if(lf == 1)	return pqp;
 	
-	size_t current	= lf;
-	for(size_t parent = current / 2 - 1; parent > -1; --parent) {
-		if(pq_arr[parent]->priority > priority) {
+	size_t current	= lf - 1;
+	for(size_t parent = (current - 1) / 2; parent >= 0 && parent < lf; ) {
+		printf("right before if statement\n");
+		if(pq_arr[parent]->priority < priority) {
+			printf("current is %zu and parent is %zu\n", current, parent);
 			PQ_DATA_P tmp	= pq_arr[parent];
 			pq_arr[parent]	= pq_arr[current];
 			pq_arr[current]	= tmp;
 			current			= parent;
+			parent			= (current - 1) / 2;
+			printf("end of if statement\n");
 		}
 		else {
 			break;
@@ -117,37 +121,20 @@ print_pq_old(PQ_P pqp)
 {
 	PQ_DATA_P *data_arr = pqp->pq;
 	size_t size			= pqp->last_free;
-	uint32_t level		= 1;
-	uint32_t next_level	= 2;
-	uint32_t max_levels	= log2(size) + 1;
-	uint32_t rem_levels	= max_levels - level;
-	uint32_t offset		= max_levels - level;
-	printf("%u\n", max_levels);
-	
+	size_t cur_level	= 1;
+	size_t next_level	= cur_level * 2;
+
 	for(size_t i = 0; i < size; ++i) {
-		if(i == 0) {
-			for(size_t j = 0; j < offset * rem_levels; ++j) { printf(" "); }
-			offset--;
-		}
-		if(level == next_level) {
+		if(cur_level == next_level)	{
 			printf("\n");
-			next_level *=2;
-			for(size_t j = 0; j < offset * rem_levels; ++j) { printf(" "); }
-			offset--;
-			//rem_levels--;
-			if (rem_levels != 1) rem_levels--;
+			next_level *= 2;
 		}
 		
-		if (offset <= 1) offset = 1;
-		//for(size_t j = 0; j < offset / next_level; ++j) { printf(" "); }
-		
-		printf("%" PRIKEY, data_arr[i]->priority);
-		for(size_t j = 0; j < offset * rem_levels; ++j) { printf(" "); }
-		
-		level++;
-		
-		
+		printf("%" PRIKEY " ", data_arr[i]->priority);
+		cur_level++;	
 	}
+	
+	
 	printf("\n");
 }
 
@@ -156,7 +143,7 @@ print_pq(PQ_P pqp)
 {
 	PQ_DATA_P	*arr		= pqp->pq;
 	size_t		elem_no		= pqp->last_free;
-	uint32_t	max_leveSl	= log2(elem_no) + 1;
+	uint32_t	max_level	= log2(elem_no) + 1;
 	uint32_t	level		= 1;
 	uint32_t	level_len	= pow(2, max_level - 1);
 	uint32_t	offset		= level_len / 2 - 1;
@@ -164,7 +151,7 @@ print_pq(PQ_P pqp)
 	
 	uint32_t	elem_at_level = 1;
 	
-	printf("%u\n", max_level);
+	printf("max level - %u\n", max_level);
 	for(size_t i = 0; i < max_level; ++i) {
 		
 		for(size_t j = 0; j < offset; ++j) 
@@ -172,7 +159,8 @@ print_pq(PQ_P pqp)
 			
 		
 		for(size_t j = 0; j < elem_at_level; ++j) {
-			int32_t printed = printf("%" PRIKEY, arr[i+j]->priority);
+			//int32_t printed = printf("%" PRIKEY, arr[i+j]->priority);
+			int32_t printed = printf("%s", arr[i+j]->data);
 			printed = printed > 1 ? printed -= 1 : printed;
 			int32_t blanks_to_print = 	prev_offset > printed ? 
 										prev_offset - printed : 0;
@@ -255,7 +243,7 @@ int main(void)
 	
 	insert_random_data(pq, 100, 0, 100);
 	
-	print_pq(pq);
+	print_pq_old(pq);
 	
 	
 	
