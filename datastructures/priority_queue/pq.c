@@ -20,6 +20,10 @@ struct pq {
 
 
 
+
+
+
+
 PQ_DATA_P
 create_data(void *data, size_t data_size, key_t priority)
 {
@@ -41,25 +45,30 @@ create_data(void *data, size_t data_size, key_t priority)
 
 
 PQ_P		
-init_pq (size_t size)
+init_pq (size_t size, PQ_DATA_P *pq_a)
 {
-	if(size == 0)	size = DEF_PQ_SIZE;
-	
-	PQ_DATA_P	*pq_a = calloc(size, sizeof(*pq_a));
-	if(NULL == pq_a) {
-		perror("init_pq");
-		exit(EXIT_FAILURE);
-	}
-	
-	PQ_P		pq   = calloc(1, sizeof(*pq));
+	PQ_P pq	= calloc(1, sizeof(*pq));
 	if(NULL == pq) {
 		perror("init_pq");
 		exit(EXIT_FAILURE);
 	}
 	
+	size_t last_free = size;
+	if(pq_a == NULL || size == 0) {
+		if(size == 0)	size = DEF_PQ_SIZE;
+		
+		pq_a = calloc(size, sizeof(*pq_a));
+		if(NULL == pq_a) {
+			perror("init_pq");
+			exit(EXIT_FAILURE);
+		}
+		
+		last_free = 0;
+	}
+	
 	pq->pq			= pq_a;
 	pq->pq_size		= size;
-	pq->last_free	= 0;
+	pq->last_free	= last_free;
 	
 	return pq;
 }
@@ -101,28 +110,47 @@ insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, key_t priority)
 PQ_P
 build_max_heap(PQ_DATA_P *array, size_t arr_len)
 {
+	#ifdef DEBUG
+			printf("Entering build_max_heap\n");
+	#endif
 	
+	PQ_P pqp 		= init_pq(arr_len, array);
+	
+	for(size_t cur_i = (arr_len - 1) / 2; cur_i >= 0 && cur_i < arr_len; --cur_i)
+		max_heapify(pqp, cur_i);
+		
+	return pqp;
 }
 
 PQ_P
-max_headpify(PQ_P pqp, size_t index)
+max_heapify(PQ_P pqp, size_t index)
 {
+	#ifdef DEBUG
+			printf("Entering max_heapify\n");
+	#endif
+
 	PQ_DATA_P *data_arr	= pqp->pq;
 	size_t size			= pqp->pq_size;
 	size_t lf			= pqp->last_free;
 	size_t i			= index;
 	
 	while(i < lf) {
-		size_t ic_one	= index * 2 + 1;
-		size_t ic_two	= index * 2 + 2;
+		size_t ic_one	= i * 2 + 1;
+		size_t ic_two	= i * 2 + 2;
 		
-		key_t p_one		= ic_one < lf ? data_arr[ic_one]->priority : 0;
-		key_t p_two		= ic_two < lf ? data_arr[ic_two]->priority : 0;
+		key_t p_one		= ic_one < lf ? data_arr[ic_one]->priority : MIN_PRIOR;
+		key_t p_two		= ic_two < lf ? data_arr[ic_two]->priority : MIN_PRIOR;
 		key_t p_i		= data_arr[i]->priority;
 		
 		size_t ic_max	= (p_one >  p_two) * ic_one + 
 						  (p_two >  p_one) * ic_two + 
-						  (p_one == p_two) * ic_one;
+						  (p_one == p_two) * ic_one * (ic_one < lf);
+		
+		#ifdef DEBUG
+				printf(	"i is %zu and lf is %zu and ic_max is %zu "
+						"and ic_one is %zu(%"PRIKEY") and ic_two is %zu(%"PRIKEY")\n", 
+							i, lf, ic_max, ic_one, p_one, ic_two, p_two);
+		#endif
 		
 		if(ic_max != 0 && data_arr[ic_max]->priority > p_i) {
 			PQ_DATA_P tmp		= data_arr[ic_max];
@@ -134,6 +162,7 @@ max_headpify(PQ_P pqp, size_t index)
 			break;
 		}	
 	}
+	
 	return pqp;
 }
 
@@ -230,7 +259,7 @@ insert_random_data(PQ_P pqp, size_t size, int32_t min, int32_t max)
 		key_t priority	= inp_nums[i];
 		
 		#ifdef DEBUG
-			printf("rand num is %" PRIKEY "\n", key);
+			printf("rand num is %" PRIKEY "\n", priority);
 		#endif
 
 		int32_t dummy_len = snprintf(NULL, 0, "%" PRIKEY, priority) + 1;
@@ -244,6 +273,36 @@ insert_random_data(PQ_P pqp, size_t size, int32_t min, int32_t max)
 		insert_into_max_heap(pqp, dummy, strlen(dummy)+1, priority);
 	}
 	free(inp_nums);
+}
+
+PQ_DATA_P*
+get_random_pqpdata_arr(size_t size, int32_t min, int32_t max)
+{
+	if(!seed) init_rand();
+	
+	if(max==0) max = size;
+	
+	PQ_DATA_P *array	= calloc(size, sizeof(*array));
+	
+	for(size_t i = 0; i < size; ++i) {
+		key_t priority 	= get_rand_num(min, max);
+		
+		#ifdef DEBUG
+			printf("rand num is %" PRIKEY "\n", priority);
+		#endif
+
+		int32_t dummy_len	= snprintf(NULL, 0, "%" PRIKEY, priority) + 1;
+		char *	dummy		= calloc(1, dummy_len);
+		snprintf(dummy, dummy_len, "%" PRIKEY, priority);
+		
+		#ifdef DEBUG
+			printf("dummy data is %s\n", dummy);
+		#endif
+		
+		array[i]			= create_data(dummy, dummy_len, priority);
+	}
+	
+	return array;
 }
 
 static void
@@ -265,9 +324,18 @@ get_rand_num(int32_t l, int32_t h)
 
 int main(void)
 {
-	new_pq(pq, 0);
+	size_t	len = 100;
+	int32_t	min = 0;
+	int32_t	max = 100;
 	
-	insert_random_data(pq, 100, 0, 100);
+	//new_pq(pq, 0);
+	
+	//insert_random_data(pq, len, min, max);
+
+	
+	PQ_DATA_P *pq_a = get_random_pqpdata_arr(len, min, max);
+	PQ_P pq			= build_max_heap(pq_a, len);
+	
 	
 	print_pq_old(pq);
 	
