@@ -149,6 +149,21 @@ heap_sort(PQ_DATA_P *array, size_t arr_len)
 	return heap_sort_do(pqp);
 }
 
+void
+delete_pq_do(PQ_P pqp)
+{
+	PQ_DATA_P *pq_a		= pqp->pq;
+	size_t len			= pqp->last_free;
+	
+	for(size_t i = 0; i < len; ++i) {
+		free(pq_a[i]->data);
+		free(pq_a[i]);
+	}
+	
+	free(pq_a);
+	free(pqp);
+}
+
 PQ_DATA_P*
 heap_sort_do(PQ_P pqp)
 {
@@ -234,6 +249,11 @@ max_heapify(PQ_P pqp, size_t index)
 void
 print_pq_old(PQ_P pqp)
 {
+	if(pqp == NULL) {
+		printf("No PQ to print!\n");
+		return;
+	}
+	
 	printf("Printing PQ...\n");
 	
 	PQ_DATA_P *data_arr = pqp->pq;
@@ -258,6 +278,11 @@ print_pq_old(PQ_P pqp)
 void
 print_pq(PQ_P pqp)
 {
+	if(pqp == NULL) {
+		printf("No PQ to print!\n");
+		return;
+	}
+	
 	printf("Printing PQ...\n");
 	
 	PQ_DATA_P	*arr		= pqp->pq;
@@ -392,30 +417,30 @@ int main(void)
 	int32_t	min = 0;
 	int32_t	max = 100;
 	
-	//new_pq(pq, 0);
+	new_pq(pq, 0);
 	
-	//insert_random_data(pq, len, min, max);
+	insert_random_data(pq, len, min, max);
 
 	
-	PQ_DATA_P *pq_a = get_random_pqpdata_arr(len, min, max);
+	//PQ_DATA_P *pq_a = get_random_pqpdata_arr(len, min, max);
 	//PQ_P pq			= build_max_heap(pq_a, len);
-	pq_a			= heap_sort(pq_a, len);
+	//pq_a			= heap_sort(pq_a, len);
 	
-	//print_pq_old(pq);
+	print_pq_old(pq);
 	//printf("%"PRIKEY"\n", peek_pq(pq)->priority);
 	//printf("%"PRIKEY"\n", pull_high_elem(pq)->priority);
 	//print_pq_old(pq);
 	
 	//size_t len	= pq->last_free;
 	//pq_a			= heap_sort_do(pq);
-	printf("Printing array\n");
-	for(size_t i = 0; i < len; ++i) {
-		printf("%" PRIKEY " ", pq_a[i]->priority);
-	}
-	printf("\n");
+	//printf("Printing array\n");
+	//for(size_t i = 0; i < len; ++i) {
+	//	printf("%" PRIKEY " ", pq_a[i]->priority);
+	//}
+	//printf("\n");
 	
-	
-	
+	delete_pq(pq);
+	print_pq(pq);
 	
 	
 }

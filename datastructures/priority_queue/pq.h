@@ -16,6 +16,8 @@ struct pq;
 
 #define		new_pq(pq, size)	PQ_P pq = init_pq((size), NULL)
 PQ_P		init_pq				(size_t size, PQ_DATA_P *pq_a);
+#define		delete_pq(pq)		do { delete_pq_do(pq); pq = NULL; } while(0)
+void		delete_pq_do		(PQ_P pqp);
 
 PQ_P		build_max_heap		(PQ_DATA_P *array, size_t arr_len);
 
