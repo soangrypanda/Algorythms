@@ -122,6 +122,23 @@ build_max_heap(PQ_DATA_P *array, size_t arr_len)
 	return pqp;
 }
 
+PQ_DATA_P
+peek_pq(PQ_P pqp) {
+	return pqp->pq[0];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 PQ_P
 max_heapify(PQ_P pqp, size_t index)
 {
@@ -338,7 +355,7 @@ int main(void)
 	
 	
 	print_pq_old(pq);
-	
+	printf("%"PRIKEY"\n", peek_pq(pq)->priority);
 	
 	
 	
