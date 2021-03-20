@@ -127,7 +127,20 @@ peek_pq(PQ_P pqp) {
 	return pqp->pq[0];
 }
 
-
+PQ_DATA_P
+pull_high_elem(PQ_P pqp) {
+	PQ_DATA_P *pq_a	= pqp->pq;
+	size_t last_e_i	= pqp->last_free - 1;
+	PQ_DATA_P ret	= pq_a[0];
+	
+	pq_a[0]			= pq_a[last_e_i];
+	pq_a[last_e_i]	= NULL;
+	pqp->last_free--;
+	
+	max_heapify(pqp, 0);
+	
+	return ret;
+}
 
 
 
@@ -356,7 +369,8 @@ int main(void)
 	
 	print_pq_old(pq);
 	printf("%"PRIKEY"\n", peek_pq(pq)->priority);
-	
+	printf("%"PRIKEY"\n", pull_high_elem(pq)->priority);
+	print_pq_old(pq);
 	
 	
 }
