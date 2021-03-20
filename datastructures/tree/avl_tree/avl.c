@@ -12,7 +12,7 @@
 /*
  * NODE INTERNAL INTERFACE
  */
-static AVL_NODE_P	create_node	(key_t key, void *data, uint32_t data_size);
+static AVL_NODE_P	create_node	(nkey_t key, void *data, uint32_t data_size);
 static void     	set_height	(AVL_NODE_P np);
 static uint32_t		get_height	(AVL_NODE_P np);
 static int32_t		recalc_height	(AVL_NODE_P np);
@@ -22,7 +22,7 @@ static AVL_NODE_P	handle_balance	(AVL_NODE_P np);
 /*
  * TREE INTERNAL INTERFACE
  */
-static AVL_NODE_P	insert		(key_t key, void *data, uint32_t data_size, 
+static AVL_NODE_P	insert		(nkey_t key, void *data, uint32_t data_size, 
 					AVL_NODE_P np, char *inserted);
 static AVL_NODE_P	right_rotate	(AVL_NODE_P np);
 static AVL_NODE_P	left_rotate	(AVL_NODE_P np);
@@ -50,7 +50,7 @@ static int32_t		get_rand_num(int32_t l, int32_t h);
  */
 
 struct node {
-	key_t		key;
+	nkey_t		key;
 	int32_t 	height;
 	uint32_t	data_size;
 	void		*data;
@@ -60,7 +60,7 @@ struct node {
 };
 
 static AVL_NODE_P 
-create_node(key_t key, void *data, uint32_t data_size)
+create_node(nkey_t key, void *data, uint32_t data_size)
 {
 	#ifdef DEBUG
 		printf("Creating node...\n");
@@ -149,7 +149,7 @@ init_avl_tree(AVL_TREE tree)
 }
 
 void
-insert_node(AVL_TREE tree, key_t key, void *data, uint32_t data_size, char *inserted)
+insert_node(AVL_TREE tree, nkey_t key, void *data, uint32_t data_size, char *inserted)
 {
 	*tree = insert(key, data, data_size, *tree, inserted);
 }
@@ -193,7 +193,7 @@ get_min(AVL_TREE tree)
 }
 
 AVL_NODE_P
-get_node(AVL_TREE tree, key_t key)
+get_node(AVL_TREE tree, nkey_t key)
 {
 	AVL_NODE_P np = *tree;
 	while(np) {
@@ -239,7 +239,7 @@ find_next_lesser(AVL_NODE_P np)
 /* INTERNAL TREE INTERFACE IMPLEMENTATION */
 
 static AVL_NODE_P 
-insert(key_t key, void *data, uint32_t d_size, AVL_NODE_P np, char *inserted)
+insert(nkey_t key, void *data, uint32_t d_size, AVL_NODE_P np, char *inserted)
 {
 	#ifdef DEBUG
 		printf("Entering insert...\n");
@@ -251,7 +251,7 @@ insert(key_t key, void *data, uint32_t d_size, AVL_NODE_P np, char *inserted)
 	else			*inserted = 0;
 	
 	#ifdef DEBUG
-		printf("insert() after first if - key is %" PRIKEY "\n", np->key);
+		printf("insert() after first if - key is %" PRINKEY "\n", np->key);
 	#endif
 
 	set_height(np);
@@ -261,7 +261,7 @@ insert(key_t key, void *data, uint32_t d_size, AVL_NODE_P np, char *inserted)
 	#ifdef DEBUG
 		int32_t b = get_balance(np);  
 		printf("balance after rotation is - %" PRId32 "\n", b);
-		printf("insert() end  - key is %" PRIKEY "\n", np->key);
+		printf("insert() end  - key is %" PRINKEY "\n", np->key);
 	#endif
 	
 	return np;
@@ -438,12 +438,12 @@ print_do(AVL_NODE_P np, int32_t flag)
 	
 	print_do(np->left, flag);
 	
-	printf("Key - %" PRIKEY " Data - %s ", np->key, np->data);
+	printf("Key - %" PRINKEY " Data - %s ", np->key, np->data);
 	
 	if(flag == VERBOSE) {
-		printf("next min is %" PRIKEY " and next max is %" PRIKEY " ", 
+		printf("next min is %" PRINKEY " and next max is %" PRINKEY " ", 
 				find_next_lesser(np)->key, find_next_larger(np)->key);
-		if(np->parent)	printf("parent key is %" PRIKEY " ", np->parent->key);
+		if(np->parent)	printf("parent key is %" PRINKEY " ", np->parent->key);
 		else		printf("root");
 	}
 	
@@ -491,22 +491,22 @@ insert_random_data(AVL_TREE tree, size_t size, int32_t min, int32_t max)
 	if(max==0) max = size;
 	
 	size_t input_size	= size;
-	key_t *inp_nums		= calloc(1, input_size * sizeof(*inp_nums));
+	nkey_t *inp_nums		= calloc(1, input_size * sizeof(*inp_nums));
 	
 	/* one good input set */
 	//int32_t inp_nums[] = {3, 66, 84, 87, 58, 1, 26, 52, 14, 37};
 	//uint32_t input_size = 10;
 	for(size_t i = 0; i < input_size; ++i) {
 		inp_nums[i] 	= get_rand_num(min, max);
-		key_t key	= inp_nums[i];
+		nkey_t key	= inp_nums[i];
 		
 		#ifdef DEBUG
-			printf("rand num is %" PRIKEY "\n", key);
+			printf("rand num is %" PRINKEY "\n", key);
 		#endif
 
-		int32_t dummy_len = snprintf(NULL, 0, "%" PRIKEY, key) + 1;
+		int32_t dummy_len = snprintf(NULL, 0, "%" PRINKEY, key) + 1;
 		char *	dummy	  = calloc(1, dummy_len);
-		snprintf(dummy, dummy_len, "%" PRIKEY, key);
+		snprintf(dummy, dummy_len, "%" PRINKEY, key);
 		
 		#ifdef DEBUG
 			printf("dummy data is %s\n", dummy);
