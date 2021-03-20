@@ -204,6 +204,8 @@ max_heapify(PQ_P pqp, size_t index)
 void
 print_pq_old(PQ_P pqp)
 {
+	printf("Printing PQ...\n");
+	
 	PQ_DATA_P *data_arr = pqp->pq;
 	size_t size			= pqp->last_free;
 	size_t cur_level	= 1;
@@ -226,6 +228,8 @@ print_pq_old(PQ_P pqp)
 void
 print_pq(PQ_P pqp)
 {
+	printf("Printing PQ...\n");
+	
 	PQ_DATA_P	*arr		= pqp->pq;
 	size_t		elem_no		= pqp->last_free;
 	uint32_t	max_level	= log2(elem_no) + 1;
