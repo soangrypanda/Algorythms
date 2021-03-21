@@ -12,32 +12,32 @@
 /*
  * NODE INTERNAL INTERFACE
  */
-static AVL_NODE_P	create_node	(nkey_t key, void *data, uint32_t data_size);
-static void     	set_height	(AVL_NODE_P np);
-static uint32_t		get_height	(AVL_NODE_P np);
-static int32_t		recalc_height	(AVL_NODE_P np);
-static void		set_as_parent	(AVL_NODE_P np);
-static int32_t 		get_balance	(AVL_NODE_P np);
-static AVL_NODE_P	handle_balance	(AVL_NODE_P np);
+static AVL_NODE_P   create_node     (nkey_t key, void *data, uint32_t data_size);
+static void         set_height      (AVL_NODE_P np);
+static uint32_t     get_height      (AVL_NODE_P np);
+static int32_t      recalc_height   (AVL_NODE_P np);
+static void         set_as_parent   (AVL_NODE_P np);
+static int32_t      get_balance     (AVL_NODE_P np);
+static AVL_NODE_P   handle_balance  (AVL_NODE_P np);
 /*
  * TREE INTERNAL INTERFACE
  */
-static AVL_NODE_P	insert		(nkey_t key, void *data, uint32_t data_size, 
-					AVL_NODE_P np, char *inserted);
-static AVL_NODE_P	right_rotate	(AVL_NODE_P np);
-static AVL_NODE_P	left_rotate	(AVL_NODE_P np);
-static AVL_NODE_P	find_max	(AVL_NODE_P np);
-static AVL_NODE_P	find_min	(AVL_NODE_P np);
-static void		delete_tree_do	(AVL_NODE_P np);
-static AVL_NODE_P	pop_node_do(AVL_TREE tree, AVL_NODE_P np, int32_t rec_level);
-static void		handle_tree_recalc(AVL_NODE_P start, AVL_NODE_P end, AVL_TREE tree);
+static AVL_NODE_P   insert          (nkey_t key, void *data, uint32_t data_size, 
+					                AVL_NODE_P np, char *inserted);
+static AVL_NODE_P   right_rotate    (AVL_NODE_P np);
+static AVL_NODE_P   left_rotate     (AVL_NODE_P np);
+static AVL_NODE_P   find_max        (AVL_NODE_P np);
+static AVL_NODE_P   find_min        (AVL_NODE_P np);
+static void         delete_tree_do  (AVL_NODE_P np);
+static AVL_NODE_P   pop_node_do     (AVL_TREE tree, AVL_NODE_P np, int32_t rec_level);
+static void         handle_tree_recalc(AVL_NODE_P start, AVL_NODE_P end, AVL_TREE tree);
 /*
  * MISCELANEOUS INTERNAL INTERFACE
  */
-static void		print_do	(AVL_NODE_P np, int32_t flag);
-static int32_t		invariant_holds	(AVL_NODE_P np);
-static void		init_rand	(void);
-static int32_t		get_rand_num(int32_t l, int32_t h);
+static void         print_do        (AVL_NODE_P np, int32_t flag);
+static int32_t      invariant_holds (AVL_NODE_P np);
+static void         init_rand       (void);
+static int32_t      get_rand_num    (int32_t l, int32_t h);
 
 
 
