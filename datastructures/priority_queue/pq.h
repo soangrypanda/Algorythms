@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stddef.h>
 
 
 typedef	struct pq_data  PQ_DATA;
@@ -8,7 +9,6 @@ typedef	PQ*             PQ_P;
 typedef	uint32_t        pri_t;
 #define	PRIPRI          PRIu32
 #define	MIN_PRIOR       0
-#define	DEF_PQ_SIZE     100
 
 
 #define     new_pq(pq, size)    PQ_P pq = init_pq((size), NULL)

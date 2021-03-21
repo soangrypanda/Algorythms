@@ -17,6 +17,9 @@ struct pq {
     size_t      last_free;
 };
 
+enum {  DEF_PQ_SIZE     = 100, 
+        REALLOC_STRIDE  = 3
+};
 
 /**********************************
  * INTERNAL INTERFACE DESCRIPTION *
@@ -29,6 +32,7 @@ static PQ_DATA_P    create_data     (void *data, size_t data_size, pri_t priorit
 /*
  * PQ
  */
+static void         realloc_pq      (PQ_P pqp);
 static PQ_DATA_P*   heap_sort_do    (PQ_P pqp);
 static PQ_P         max_heapify     (PQ_P pqp, size_t index);
 /*
@@ -118,12 +122,12 @@ insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, pri_t priority)
 	    printf("\n   ENTERING insert_into_max_heap\n");
     #endif
 
-	PQ_DATA_P *pq_arr   = pqp->pq;
 	size_t size         = pqp->pq_size;
 	size_t lf           = pqp->last_free;
 
-	//if(lf >= size)      realloc_pq;
+	if(lf >= size)      realloc_pq(pqp);
 	
+	PQ_DATA_P *pq_arr   = pqp->pq;
 	pq_arr[lf]          = create_data(data, data_size, priority);
 	lf                  = ++pqp->last_free;
 	
@@ -202,6 +206,26 @@ heap_sort(PQ_DATA_P *array, size_t arr_len)
 }
 
 /* PQ DATA INTERNAL IMPLEMENTATIONS */
+
+static void
+realloc_pq(PQ_P pqp)
+{
+    #ifdef DEBUG
+        printf("\n\nENTERING realloc_pq\n\n");
+    #endif
+
+    PQ_DATA_P *tmp_arr  = pqp->pq;
+    size_t new_size     = pqp->pq_size * REALLOC_STRIDE;
+
+    tmp_arr             = reallocarray(tmp_arr, new_size, sizeof(*tmp_arr));   
+    if(NULL == tmp_arr) {
+        perror("realloc_pq");
+        exit(EXIT_FAILURE);
+    }
+
+    pqp->pq             = tmp_arr;
+    pqp->pq_size        = new_size; 
+}
 
 static PQ_DATA_P*
 heap_sort_do(PQ_P pqp)
