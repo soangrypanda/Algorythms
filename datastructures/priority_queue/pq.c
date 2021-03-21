@@ -7,8 +7,8 @@
 
 struct pq_data {
     void*   data;
-	size_t  data_size;
-	pri_t   priority;
+    size_t  data_size;
+    pri_t   priority;
 };
 
 struct pq {
@@ -119,7 +119,7 @@ PQ_P
 insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, pri_t priority)
 {
     #ifdef DEBUG
-	    printf("\n   ENTERING insert_into_max_heap\n");
+        printf("\n   ENTERING insert_into_max_heap\n");
     #endif
 
 	size_t size         = pqp->pq_size;
@@ -136,12 +136,12 @@ insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, pri_t priority)
 	size_t current	= lf - 1;
 	for(size_t parent = (current - 1) / 2; parent >= 0 && parent < lf; ) {
         #ifdef DEBUG
-		    printf("right before if statement\n");
+            printf("right before if statement\n");
         #endif
 
 		if(pq_arr[parent]->priority < priority) {
             #ifdef DEBUG
-			    printf("current is %zu and parent is %zu\n", current, parent);
+                printf("current is %zu and parent is %zu\n", current, parent);
             #endif
 
 			PQ_DATA_P tmp   = pq_arr[parent];
@@ -151,7 +151,7 @@ insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, pri_t priority)
 			parent          = (current - 1) / 2;
 
             #ifdef DEBUG
-			    printf("end of if statement\n");
+                printf("end of if statement\n");
             #endif
 		}
 		else {
@@ -186,9 +186,9 @@ pull_high_elem(PQ_P pqp)
 PQ_P
 build_max_heap(PQ_DATA_P *array, size_t arr_len)
 {
-	#ifdef DEBUG
-			printf("Entering build_max_heap\n");
-	#endif
+    #ifdef DEBUG
+        printf("Entering build_max_heap\n");
+    #endif
 	
 	PQ_P pqp            = init_pq(arr_len, array);
 	
@@ -230,9 +230,9 @@ realloc_pq(PQ_P pqp)
 static PQ_DATA_P*
 heap_sort_do(PQ_P pqp)
 {
-	#ifdef DEBUG
-			printf("Entering heap_sort\n");
-	#endif
+    #ifdef DEBUG
+        printf("Entering heap_sort\n");
+    #endif
 	
 	PQ_DATA_P *pq_a	= pqp->pq;
 	size_t lf       = pqp->last_free;
@@ -255,9 +255,9 @@ heap_sort_do(PQ_P pqp)
 static PQ_P
 max_heapify(PQ_P pqp, size_t index)
 {
-	#ifdef DEBUG
-			printf("Entering max_heapify\n");
-	#endif
+    #ifdef DEBUG
+        printf("Entering max_heapify\n");
+    #endif
 
 	PQ_DATA_P *data_arr = pqp->pq;
 	size_t size         = pqp->pq_size;
@@ -276,11 +276,11 @@ max_heapify(PQ_P pqp, size_t index)
                           (p_two >  p_one) * ic_two + 
                           (p_one == p_two) * ic_one * (ic_one < lf);
 		
-		#ifdef DEBUG
-				printf(	"i is %zu and lf is %zu and ic_max is %zu "
-						"and ic_one is %zu(%"PRIPRI") and ic_two is %zu(%"PRIPRI")\n", 
-							i, lf, ic_max, ic_one, p_one, ic_two, p_two);
-		#endif
+        #ifdef DEBUG
+            printf(	"i is %zu and lf is %zu and ic_max is %zu "
+                    "and ic_one is %zu(%"PRIPRI") and ic_two is %zu(%"PRIPRI")\n", 
+                    i, lf, ic_max, ic_one, p_one, ic_two, p_two);
+        #endif
 		
 		if(ic_max != 0 && data_arr[ic_max]->priority > p_i) {
 			PQ_DATA_P tmp       = data_arr[ic_max];
@@ -356,17 +356,17 @@ insert_random_data(PQ_P pqp, size_t size, int32_t min, int32_t max)
 		inp_nums[i]     = get_rand_num(min, max);
 		pri_t priority  = inp_nums[i];
 		
-		#ifdef DEBUG
-			printf("rand num is %" PRIPRI "\n", priority);
-		#endif
+        #ifdef DEBUG
+            printf("rand num is %" PRIPRI "\n", priority);
+        #endif
 
 		int32_t dummy_len   = snprintf(NULL, 0, "%" PRIPRI, priority) + 1;
 		char *	dummy       = calloc(1, dummy_len);
 		snprintf(dummy, dummy_len, "%" PRIPRI, priority);
 		
-		#ifdef DEBUG
-			printf("dummy data is %s\n", dummy);
-		#endif
+        #ifdef DEBUG
+            printf("dummy data is %s\n", dummy);
+        #endif
 		
 		insert_into_max_heap(pqp, dummy, strlen(dummy)+1, priority);
 	}
@@ -385,17 +385,17 @@ get_random_pqpdata_arr(size_t size, int32_t min, int32_t max)
 	for(size_t i = 0; i < size; ++i) {
 		pri_t priority  = get_rand_num(min, max);
 		
-		#ifdef DEBUG
-			printf("rand num is %" PRIPRI "\n", priority);
-		#endif
+        #ifdef DEBUG
+            printf("rand num is %" PRIPRI "\n", priority);
+        #endif
 
 		int32_t dummy_len   = snprintf(NULL, 0, "%" PRIPRI, priority) + 1;
 		char *	dummy       = calloc(1, dummy_len);
 		snprintf(dummy, dummy_len, "%" PRIPRI, priority);
 		
-		#ifdef DEBUG
-			printf("dummy data is %s\n", dummy);
-		#endif
+        #ifdef DEBUG
+            printf("dummy data is %s\n", dummy);
+        #endif
 		
 		array[i]            = create_data(dummy, dummy_len, priority);
 	}

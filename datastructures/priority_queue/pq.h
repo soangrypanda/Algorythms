@@ -21,7 +21,7 @@ PQ_P        build_max_heap      (PQ_DATA_P *array, size_t arr_len);
 PQ_DATA_P   peek_pq             (PQ_P pqp);
 PQ_DATA_P   pull_high_elem      (PQ_P pqp);
 PQ_P        build_max_heap      (PQ_DATA_P *array, size_t arr_len);
-PQ_DATA_P*  heap_sort			(PQ_DATA_P *array, size_t arr_len);
+PQ_DATA_P*  heap_sort           (PQ_DATA_P *array, size_t arr_len);
 
 void        print_pq            (PQ_P pqp);
 
