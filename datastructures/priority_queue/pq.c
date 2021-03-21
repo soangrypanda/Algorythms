@@ -139,7 +139,7 @@ insert_into_max_heap(PQ_P pqp, void *data, size_t data_size, pri_t priority)
             printf("right before if statement\n");
         #endif
 
-		if(pq_arr[parent]->priority < priority) {
+        if(pq_arr[parent]->priority < priority) {
             #ifdef DEBUG
                 printf("current is %zu and parent is %zu\n", current, parent);
             #endif
@@ -265,14 +265,14 @@ max_heapify(PQ_P pqp, size_t index)
 	size_t i            = index;
 	
 	while(i < lf) {
-		size_t ic_one   = i * 2 + 1;
-		size_t ic_two   = i * 2 + 2;
+        size_t ic_one   = i * 2 + 1;
+        size_t ic_two   = i * 2 + 2;
 		
-		pri_t p_one     = ic_one < lf ? data_arr[ic_one]->priority : MIN_PRIOR;
-		pri_t p_two     = ic_two < lf ? data_arr[ic_two]->priority : MIN_PRIOR;
-		pri_t p_i       = data_arr[i]->priority;
+        pri_t p_one     = ic_one < lf ? data_arr[ic_one]->priority : MIN_PRIOR;
+        pri_t p_two     = ic_two < lf ? data_arr[ic_two]->priority : MIN_PRIOR;
+        pri_t p_i       = data_arr[i]->priority;
 		
-		size_t ic_max   = (p_one >  p_two) * ic_one + 
+        size_t ic_max   = (p_one >  p_two) * ic_one + 
                           (p_two >  p_one) * ic_two + 
                           (p_one == p_two) * ic_one * (ic_one < lf);
 		
@@ -282,18 +282,18 @@ max_heapify(PQ_P pqp, size_t index)
                     i, lf, ic_max, ic_one, p_one, ic_two, p_two);
         #endif
 		
-		if(ic_max != 0 && data_arr[ic_max]->priority > p_i) {
-			PQ_DATA_P tmp       = data_arr[ic_max];
-			data_arr[ic_max]    = data_arr[i];
-			data_arr[i]         = tmp;
-			i                   = ic_max;
-		}
-		else {
-			break;
-		}	
-	}
+        if(ic_max != 0 && data_arr[ic_max]->priority > p_i) {
+            PQ_DATA_P tmp       = data_arr[ic_max];
+            data_arr[ic_max]    = data_arr[i];
+            data_arr[i]         = tmp;
+            i                   = ic_max;
+        }
+        else {
+            break;
+        }	
+    }
 	
-	return pqp;
+    return pqp;
 }
 
 
