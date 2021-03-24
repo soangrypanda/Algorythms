@@ -1,6 +1,7 @@
 #ifndef PQ_H_SENTRY
 #define PQ_H_SENTRY
 
+
 #include <inttypes.h>
 #include <stddef.h>
 
@@ -30,5 +31,6 @@ void        print_pq            (PQ_P pqp);
 
 void        insert_random_data  (PQ_P pqp, size_t size, int32_t min, int32_t max);
 PQ_DATA_P*  get_random_pqpdata_arr(size_t size, int32_t min, int32_t max);
+
 
 #endif
