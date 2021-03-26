@@ -12,12 +12,20 @@ typedef HT_ITEM_S*      HT_ITEM_S_P;
 #define DEF_HT_SIZE     8
 
 
-#define     new_ht(ht, size)    HT ht = init_hash_table(size)
+#define     new_ht(ht, size)    HT ht   = init_hash_table(size)
+#define     delete_ht(ht)       ht      = delete_ht_do(ht)
+
 signed char
 insert_into_slot(HT_ITEM_S_P *ht_arr, void *data, size_t d_size, char *key, size_t h_i);
 
+enum { INCREASE_HT, DECREASE_HT };
 void
-table_double(HT ht);
+change_ht_len(HT ht, int change_how);
+
+
+size_t next_prime(size_t x);
+size_t prev_prime(size_t n);
+
 
 size_t
 hash(char *key, uint32_t n);
