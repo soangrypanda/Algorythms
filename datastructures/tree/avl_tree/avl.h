@@ -5,15 +5,15 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-typedef	struct node     AVL_NODE;
-typedef	AVL_NODE *      AVL_NODE_P;
-typedef	AVL_NODE_P *    AVL_TREE;	
-typedef	int32_t         nkey_t;
+typedef struct node     AVL_NODE;
+typedef AVL_NODE *      AVL_NODE_P;
+typedef AVL_NODE_P *    AVL_TREE;   
+typedef int32_t         nkey_t;
 #define PRINKEY         PRId32
 
 enum print_tree_flags {PLAIN, VERBOSE};
 
-#define	    new_avl_tree(X)     AVL_TREE X = init_avl_tree(X)
+#define     new_avl_tree(X)     AVL_TREE X = init_avl_tree(X)
 AVL_TREE    init_avl_tree       (AVL_TREE tree);
 void        insert_node         (AVL_TREE tree, nkey_t key, void *data, 
                                 uint32_t data_size, char *inserted);
