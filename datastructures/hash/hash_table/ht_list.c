@@ -36,7 +36,7 @@ static signed char  insert_into_slot    (HT_ITEM_S_P *ht_arr, void *data, size_t
                                         char *key, size_t h_i);
 static void         replace_data        (HT_ITEM_S_P item, void *data, size_t d_size);
 static void         change_ht_len       (HT ht, int change_how);
-enum 									{ INCREASE_HT, DECREASE_HT };
+enum                                    { INCREASE_HT, DECREASE_HT };
 
 /* MISCELANEOUS */
 static char         is_prime            (size_t x);
@@ -162,7 +162,7 @@ HT_ITEM_S_P
 pop_item(HT ht, char *key)
 {
     HT_ITEM_S_P *arr    = ht->arr;
-    size_t len			= ht->len;
+    size_t len          = ht->len;
     size_t h_i          = hash(key, len);
     HT_ITEM_S_P *pp     = &arr[h_i];
     pp                  = find_place_in_slot(pp, key, NULL);
@@ -174,7 +174,7 @@ pop_item(HT ht, char *key)
     }
     
     if(ht->n_elem * HT_DECREASE_TRESHOLD <= len) {
-    	change_ht_len(ht, DECREASE_HT);
+        change_ht_len(ht, DECREASE_HT);
     }
     
     return ret;
@@ -329,38 +329,38 @@ unsigned int seed;
 char **
 fill_ht_with_r_d(HT ht, size_t size, int32_t min, int32_t max)
 {
-	if(!seed) init_rand();
-	
-	if(max==0) max = size;
+    if(!seed) init_rand();
+    
+    if(max==0) max = size;
 
     char **arr_of_keys = calloc(size, sizeof(*arr_of_keys));
 
-	for(size_t i = 0; i < size; ++i) {
-		int d_n   = get_rand_num(min, max);
-		int key_n = ( (size_t)pow(get_rand_num(min, max), i) << sizeof(max) / 2) | d_n>>2;
-		
+    for(size_t i = 0; i < size; ++i) {
+        int d_n   = get_rand_num(min, max);
+        int key_n = ( (size_t)pow(get_rand_num(min, max), i) << sizeof(max) / 2) | d_n>>2;
+        
         #ifdef DEBUG
             printf("rand num is %d for key and %d for data\n", key_n, d_n);
         #endif
 
-		int32_t key_len = snprintf(NULL, 0, "%d", key_n) + 1;
-		char *key       = calloc(1, key_len);
-		snprintf(key, key_len, "%d", key_n);
-		
-		int32_t d_len   = snprintf(NULL, 0, "%d", d_n) + 1;
-		char *data      = calloc(1, d_len);
-		snprintf(data, d_len, "%d", d_n);
+        int32_t key_len = snprintf(NULL, 0, "%d", key_n) + 1;
+        char *key       = calloc(1, key_len);
+        snprintf(key, key_len, "%d", key_n);
+        
+        int32_t d_len   = snprintf(NULL, 0, "%d", d_n) + 1;
+        char *data      = calloc(1, d_len);
+        snprintf(data, d_len, "%d", d_n);
 
         #ifdef DEBUG
             printf("key is %s and data is %s\n", key, data);
         #endif
-		
+        
         char ret = insert_data(ht, data, d_len, key);    
         if(ret == 1)
             free(key);
         else
             arr_of_keys[i] = key;
-	}
+    }
 
     return arr_of_keys;
 }
@@ -437,11 +437,11 @@ prehash(char *key, uint_least64_t *prehash)
 static void
 init_rand(void) 
 {
-	seed = time(NULL);
+    seed = time(NULL);
 }
 
 static int32_t
 get_rand_num(int32_t l, int32_t h)
 {
-	return l + rand_r(&seed) % h;
+    return l + rand_r(&seed) % h;
 }
