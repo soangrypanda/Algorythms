@@ -1,11 +1,8 @@
 #include "merge_sort_vanilla.h"
 
 
-void merge_sort	(int32_t *arr, uint32_t strt, uint32_t len);
-void merge	(int32_t *arr, uint32_t strt, uint32_t mid, uint32_t len);
-
-
-void merge_sort(int32_t *arr, uint32_t strt, uint32_t len) {
+void merge_sort(int32_t *arr, uint32_t strt, uint32_t len) 
+{
 	if (len - strt > 1) {
 	/* avoid potential arithmetic overflow on start+end
      	 * for more info see:
@@ -19,7 +16,8 @@ void merge_sort(int32_t *arr, uint32_t strt, uint32_t len) {
 	}
 }
 
-void merge(int32_t *arr, uint32_t strt, uint32_t mid, uint32_t len) {
+void merge(int32_t *arr, uint32_t strt, uint32_t mid, uint32_t len) 
+{
 	int32_t *tmp_arr = malloc(sizeof(*tmp_arr) * (len - strt));
 	uint32_t i = strt;
 	uint32_t j = 0;
