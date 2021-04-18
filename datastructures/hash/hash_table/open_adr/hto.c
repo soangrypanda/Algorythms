@@ -18,26 +18,26 @@ static HT_ITEM_S *deleted_item  = &deleted_item_s;
 
 enum change_ht_len { INCREASE_HT, DECREASE_HT };
 
-#define		HT_TRAVERSE_MODE_DECLARATIONS		HT_TRAVERSE_MODE(insert) \
-												HT_TRAVERSE_MODE(delete) \
-												HT_TRAVERSE_MODE(search) \
-												
+#define     HT_TRAVERSE_MODE_DECLARATIONS       HT_TRAVERSE_MODE(insert) \
+                                                HT_TRAVERSE_MODE(delete) \
+                                                HT_TRAVERSE_MODE(search) \
+                                                
 enum traverse_mods { 
 #define HT_TRAVERSE_MODE(mode) ht_ ## mode ## _m ,
-	HT_TRAVERSE_MODE_DECLARATIONS
+    HT_TRAVERSE_MODE_DECLARATIONS
 #undef HT_TRAVERSE_MODE
 
 };
 
 #define HT_TRAVERSE_MODE(mode) static char if_found_for_ ## mode (HT ht, char *key, size_t i);
-	HT_TRAVERSE_MODE_DECLARATIONS
-#undef HT_TRAVERSE_MODE	
+    HT_TRAVERSE_MODE_DECLARATIONS
+#undef HT_TRAVERSE_MODE 
 
 
 ht_traverse_cond_fp ht_traverse_jump_table[] =  {
 #define HT_TRAVERSE_MODE(mode) if_found_for_ ## mode ,
-	HT_TRAVERSE_MODE_DECLARATIONS
-#undef HT_TRAVERSE_MODE	
+    HT_TRAVERSE_MODE_DECLARATIONS
+#undef HT_TRAVERSE_MODE 
 };
 
 #undef HT_TRAVERSE_MODE_DECLARATIONS
