@@ -306,6 +306,9 @@ build_maze(MAZE maze)
 		if(arr[w*i]			!= PATH)	arr[w*i]		= WALL;
 		if(arr[w*i+w-1]		!= PATH)	arr[w*i+w-1]	= WALL;
 	}
+	
+	arr[w*maze->sy + maze->sx] = START_POS;
+	arr[w*maze->ey + maze->ex] = END_POS;
 }
 
 void
@@ -421,7 +424,7 @@ int main(void)
 	init_rand();
 	fill_maze(maze, WALL);
 	prepare_correct_path(maze);
-	//build_maze(maze);
+	build_maze(maze);
 	print_maze(maze);
 	delete_maze(maze);
 }
