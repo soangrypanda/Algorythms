@@ -7,6 +7,7 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <inttypes.h>
 
 typedef struct maze MAZE_S;
 typedef MAZE_S*		MAZE;

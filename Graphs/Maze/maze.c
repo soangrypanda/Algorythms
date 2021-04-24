@@ -64,7 +64,10 @@ enum maze_tiles { WALL 			= '#',
 				  PATH 			= '*', 
 				  WALL_PUSHBACK = 'P',
 				  START_POS		= 'S',
-				  END_POS		= 'E'};
+				  END_POS		= 'E',
+				  ANCHOR		= 'A'
+				};
+
 MAZE
 create_maze(size_t w, size_t h)
 {
@@ -306,6 +309,26 @@ build_maze(MAZE maze)
 }
 
 void
+make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2)
+{
+	char *arr	= maze->maze;
+	size_t w	= maze->w;
+	size_t h	= maze->h;
+	size_t ys	= y1 < y2 ? y1 : y2;
+	size_t ye	= y1 < y2 ? y2 : y1;
+	
+	for(; ys <= ye; ++ys) {
+		arr[w*ys+x1] = PATH;	
+	}
+	
+	size_t xs	= x1 < x2 ? x1 : x2;
+	size_t xe	= x1 < x2 ? x2 : x1;
+	
+	for(; xs <=xe; ++xs)
+		arr[w*y2+xs] = PATH;
+}
+
+void
 prepare_correct_path(MAZE maze)
 {
 	char * arr	= maze->maze;
@@ -334,13 +357,67 @@ prepare_correct_path(MAZE maze)
 	
 	arr[w*start_y + start_x] 	= START_POS;
 	arr[w*end_y + end_x] 		= END_POS;
+	
+	size_t n_anchors 	= 0;
+	size_t size			= w * h;
+	for(; size != 0; size/=10) {
+		n_anchors++;
+	}
+	printf("%zu\n", n_anchors);
+	
+	size_t *axarr = calloc(n_anchors, sizeof(*axarr));
+	size_t *ayarr = calloc(n_anchors, sizeof(*ayarr));	
+	
+	for(size_t i = 0; i < n_anchors; ++i) {
+		size_t ax = get_rand_num(1, w-2);
+		size_t ay = get_rand_num(1, h-2);
+		axarr[i] = ax;
+		ayarr[i] = ay;
+		arr[w*ay+ax] = ANCHOR;
+	}
+	
+	size_t strx;
+	if		(start_x == 0)		strx = 1;
+	else if	(start_x == w-1)	strx = w-2;
+	else						strx = start_x;
+	size_t stry;
+	if		(start_y == 0)		stry = 1;
+	else if	(start_y == h-1)	stry = h-2;
+	else						stry = start_y;
 
+	make_path(maze, strx, stry, axarr[0], ayarr[0]);
+	
+	for(size_t i = 0; i < n_anchors - 1; ++i)
+		make_path(maze, axarr[i], ayarr[i], axarr[i+1], ayarr[i+1]);
+	
+	size_t endx;
+	if		(end_x == 0)		endx = 1;
+	else if	(end_x == w-1)		endx = w-2;
+	else						endx = end_x;
+	size_t endy;
+	if		(end_y == 0)		endy = 1;
+	else if	(end_y == h-1)		endy = h-2;
+	else						endy = end_y;
+
+	//make_path(maze, strx, stry, endx, endy);
+	make_path(maze, axarr[n_anchors-1], ayarr[n_anchors-1], endx, endy);
+	
+	arr[w*start_y + start_x] 	= START_POS;
+	arr[w*end_y + end_x] 		= END_POS;	
+	
+	maze->sx = start_x;
+	maze->sy = start_y;
+	maze->ex = end_x;
+	maze->ey = end_y;
+	
+	free(axarr);
+	free(ayarr);	
 }
 
 
 int main(void)
 {
-	MAZE maze = create_maze(50, 25);	
+	MAZE maze = create_maze(100, 50);	
 	init_rand();
 	fill_maze(maze, WALL);
 	prepare_correct_path(maze);
