@@ -7,6 +7,7 @@ struct maze {
 	size_t	w;
 	size_t	h;
 	size_t	wc;
+	size_t 	sx, sy, ex, ey;
 };
 
 struct node {
@@ -59,7 +60,11 @@ delete_maze(MAZE maze)
 	free(maze);
 }
 
-enum maze_tiles { WALL = '#', PATH = '*', WALL_PUSHBACK = 'P' };
+enum maze_tiles { WALL 			= '#', 
+				  PATH 			= '*', 
+				  WALL_PUSHBACK = 'P',
+				  START_POS		= 'S',
+				  END_POS		= 'E'};
 MAZE
 create_maze(size_t w, size_t h)
 {
@@ -80,6 +85,7 @@ create_maze(size_t w, size_t h)
 	maze->h		= h;
 	maze->walls	= list;
 	maze->wc	= 0;
+	maze->sx = maze->sy = maze->ex = maze-> ey = 0;
 	
 	return maze;
 }
@@ -264,7 +270,6 @@ connect_cells(MAZE maze, NODE wall_c, NODE path_c)
 void
 build_maze(MAZE maze)
 {
-	init_rand();
 	char *arr		= maze->maze;
 	size_t w		= maze->w;
 	size_t h		= maze->h;
@@ -300,15 +305,46 @@ build_maze(MAZE maze)
 	}
 }
 
+void
+prepare_correct_path(MAZE maze)
+{
+	char * arr	= maze->maze;
+	size_t w	= maze->w;
+	size_t h	= maze->h;
+	
+	size_t start_x = get_rand_num(0, w-1);
+	size_t start_y = get_rand_num(0, h-1);
+	
+	size_t end_x = get_rand_num(0, w-1);
+	size_t end_y = get_rand_num(0, h-1);
+	
+	while(start_x == end_x && start_y == end_y) {
+		end_x = get_rand_num(0, w-1);
+	}
+	
+	int dxs = w - start_x;
+	int dys = h - start_y;
+	if(dxs > dys)	start_x = 0 + (w-1) * (start_x * h > start_y * w ? 0 : 1);
+	else			start_y = 0 + (h-1) * (end_x * h > end_y * w ? 0 : 1);
+	
+	int dxe = w - end_x;
+	int dye = h - end_y;
+	if(dxe > dye)	end_x = 0 + (w-1) * (start_x * h > start_y * w ? 0 : 1);
+	else			end_y = 0 + (h-1) * (end_x * h > end_y * w ? 0 : 1);	
+	
+	arr[w*start_y + start_x] 	= START_POS;
+	arr[w*end_y + end_x] 		= END_POS;
 
+}
 
 
 int main(void)
 {
-	MAZE maze = create_maze(200, 100);	
-	
+	MAZE maze = create_maze(50, 25);	
+	init_rand();
 	fill_maze(maze, WALL);
-	build_maze(maze);
+	prepare_correct_path(maze);
+	//build_maze(maze);
 	print_maze(maze);
 	delete_maze(maze);
 }
