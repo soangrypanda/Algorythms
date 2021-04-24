@@ -3,7 +3,7 @@
 
 struct maze {
 	char *	maze;
-	LIST_S *walls;
+	LIST    walls;
 	size_t	w;
 	size_t	h;
 	size_t	wc;
@@ -31,8 +31,35 @@ push_item(LIST list, size_t x, size_t y)
 	*list->list = item;
 }
 
+void
+delete_list_do(LIST list);
+void
+delete_list(LIST list)
+{
+	delete_list_do(list);
+	free(list);
+}
 
-enum maze_tiles { WALL = '#', PATH = ' ' };
+void
+delete_list_do(LIST list)
+{
+	NODE *head = list->list;
+	while(*head != NULL) {
+		NODE tmp = *head;
+		head	 = &(*head)->next;
+		free(tmp);	
+	}	
+}
+
+void
+delete_maze(MAZE maze) 
+{
+	delete_list(maze->walls);
+	free(maze->maze);
+	free(maze);
+}
+
+enum maze_tiles { WALL = '#', PATH = '*', WALL_PUSHBACK = 'P' };
 MAZE
 create_maze(size_t w, size_t h)
 {
@@ -43,7 +70,7 @@ create_maze(size_t w, size_t h)
 	char *arr	= calloc(size, sizeof(*arr));
 	assert(arr	!= NULL);
 	
-	LIST_S * list = calloc(1, sizeof(*list));
+	LIST list = calloc(1, sizeof(*list));
 	assert(list != NULL);		
 	list->last	= NULL;
 	list->list = &list->last;
@@ -144,6 +171,7 @@ get_random_cell_wall_from_list(MAZE maze)
 	*tmp = ret->next;
 	ret->next = NULL;
 	
+	maze->wc--;
 	return ret;
 }
 
@@ -181,16 +209,21 @@ find_rand_path_neighbour(MAZE maze, NODE cell)
 		n++;
 	}
 	
-	if(n == 0)	return NULL;
+	NODE ret;
+	if(n == 0)	{
+		ret = NULL;
+		goto clean_and_return;
+	}
 	
 	size_t rn = get_rand_num(0, n);
-	NODE ret = calloc(1, sizeof(*ret));
+	ret = calloc(1, sizeof(*ret));
 	assert(ret != NULL);
 	
 	ret->x = x_neighb[rn];
 	ret->y = y_neighb[rn];
 	ret->next = NULL;
 	
+clean_and_return:
 	free(x_neighb);
 	free(y_neighb);
 		
@@ -201,6 +234,8 @@ void
 connect_cells(MAZE maze, NODE wall_c, NODE path_c)
 {
 	char *arr	= maze->maze;
+	size_t w  = maze->w;
+	size_t h  = maze->h;
 	size_t wx = wall_c->x;
 	size_t wy = wall_c->y;
 	size_t px = path_c->x;
@@ -208,13 +243,22 @@ connect_cells(MAZE maze, NODE wall_c, NODE path_c)
 	size_t nx = wx; 
 	size_t ny = wy;
 	
+	int tile_p = PATH;
+	int tile_w = PATH;
+
+	
+	if( wx == 0 || wx == w-1 || wy == 0 || wy == h-1 )
+		tile_w = WALL_PUSHBACK;
+	if( px == 0 || px == w-1 || py == 0 || py == h-1 )
+		tile_p = WALL_PUSHBACK;
+
 	if(wx == px) 
 		ny = wy > py ? py + 1 : wy + 1;
 	else
 		nx = wx > px ? px + 1 : wx + 1;
 	
-	arr[maze->w * ny + nx] = PATH;
-	arr[maze->w * wy + wx] = PATH;
+	arr[w * ny + nx] = tile_p;
+	arr[w * wy + wx] = tile_w;
 }
 
 void
@@ -232,14 +276,28 @@ build_maze(MAZE maze)
 	
 	while(maze->wc != 0) {
 		NODE wall_c = get_random_cell_wall_from_list(maze);
-		maze->wc--;
 		NODE path_c = find_rand_path_neighbour(maze, wall_c);
 		if(path_c == NULL) {
-			continue;
+			free(wall_c);
 		}
-		connect_cells(maze, wall_c, path_c);
-		push_cell_walls(maze, wall_c->x, wall_c->y);
+		else {
+			connect_cells(maze, wall_c, path_c);
+			push_cell_walls(maze, wall_c->x, wall_c->y);
+
+			free(wall_c);
+			free(path_c);
+		}
 	}	
+	
+	for(size_t i = 0; i < w; ++i) {
+		if(arr[i] 			!= PATH)	arr[i] 			= WALL;
+		if(arr[w*(h-1)+i] 	!= PATH) 	arr[w*(h-1)+i] 	= WALL;
+	}
+	
+	for(size_t i = 0; i < h; ++i) {
+		if(arr[w*i]			!= PATH)	arr[w*i]		= WALL;
+		if(arr[w*i+w-1]		!= PATH)	arr[w*i+w-1]	= WALL;
+	}
 }
 
 
@@ -247,9 +305,10 @@ build_maze(MAZE maze)
 
 int main(void)
 {
-	MAZE maze = create_maze(100, 50);	
+	MAZE maze = create_maze(200, 100);	
 	
 	fill_maze(maze, WALL);
 	build_maze(maze);
 	print_maze(maze);
+	delete_maze(maze);
 }
