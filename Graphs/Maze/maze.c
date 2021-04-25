@@ -13,21 +13,14 @@ struct cell_coord {
 	size_t x, y;	
 };
 
-enum maze_tiles { WALL 			= '#', 
-				  PATH 			= '*', 
-				  WALL_PUSHBACK = 'P',
-				  START_POS		= 'S',
-				  END_POS		= 'E',
-				  ANCHOR		= 'A'
-				};
 
+static void
+find_start_and_end_points(MAZE maze);
+static void
+prepare_correct_path(MAZE maze);
+static void
+make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2);
 
-void push_cell_walls(MAZE maze, size_t cx, size_t cy);
-CELL_XY get_random_cell_from_walllist(MAZE maze);
-CELL_XY get_rand_path_neighbour(MAZE maze, CELL_XY cell);
-void connect_cells(MAZE maze, CELL_XY wall_c, CELL_XY path_c);
-static void make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2);
-static void find_start_and_end_points(MAZE maze);
 
 
 MAZE
@@ -61,43 +54,14 @@ fill_maze(MAZE maze, int tile)
 }
 
 void
-build_maze(MAZE maze)
+build_maze(MAZE maze, mazebuilder algo)
 {
 	char *arr		= maze->maze;
 	size_t w		= maze->w;
 	size_t h		= maze->h;
-	size_t x		= get_rand_num(0, w-1);
-	size_t y		= get_rand_num(0, h-1);
-	LIST wall_l		= maze->walls;
 	
-	arr[w * y + x] = PATH;
-	push_cell_walls(maze, x, y);
-	
-	while(get_list_len(wall_l) != 0) {
-		CELL_XY wall_c = get_random_cell_from_walllist(maze);
-		CELL_XY path_c = get_rand_path_neighbour(maze, wall_c);
-		if(path_c == NULL) {
-			free(wall_c);
-		}
-		else {
-			connect_cells(maze, wall_c, path_c);
-			push_cell_walls(maze, wall_c->x, wall_c->y);
+	algo(maze);
 
-			free(wall_c);
-			free(path_c);
-		}
-	}	
-	
-	for(size_t i = 0; i < w; ++i) {
-		if(arr[i] 			!= PATH)	arr[i] 			= WALL;
-		if(arr[w*(h-1)+i] 	!= PATH) 	arr[w*(h-1)+i] 	= WALL;
-	}
-	
-	for(size_t i = 0; i < h; ++i) {
-		if(arr[w*i]			!= PATH)	arr[w*i]		= WALL;
-		if(arr[w*i+w-1]		!= PATH)	arr[w*i+w-1]	= WALL;
-	}
-	
 	find_start_and_end_points(maze);
 	arr[w*maze->sy + maze->sx] = START_POS;
 	arr[w*maze->ey + maze->ex] = END_POS;
@@ -130,143 +94,67 @@ print_maze(MAZE maze)
 	free(m_line);
 }
 
-
-
-
-
-void
-push_cell_walls(MAZE maze, size_t cx, size_t cy)
+char*		
+get_maze_arr(MAZE maze)
 {
-	LIST_S *wall_l 	= maze->walls;
-	size_t wc		= get_list_len(wall_l);
-	char *arr		= maze->maze;
-	size_t w		= maze->w;
-	size_t h		= maze->h;
-	
-	if(cy > 1 && arr[w * (cy-2) + cx] == WALL) {
-		CELL_XY xy = calloc(1, sizeof(*xy));
-		xy->x = cx; xy->y = cy - 2;
-		push_item(wall_l, xy);
-		wc++;
-	}
-	if(cy < h-2 && arr[w * (cy+2) + cx] == WALL) {
-		CELL_XY xy = calloc(1, sizeof(*xy));
-		xy->x = cx; xy->y = cy + 2;
-		push_item(wall_l, xy);
-		wc++;
-	}
-	if(cx > 1 && arr[w * cy + (cx-2)] == WALL) {
-		CELL_XY xy = calloc(1, sizeof(*xy));
-		xy->x = cx - 2; xy->y = cy;
-		push_item(wall_l, xy);
-		wc++;
-	}
-	if(cx < w-2 && arr[w * cy + (cx+2)] == WALL) {
-		CELL_XY xy = calloc(1, sizeof(*xy));
-		xy->x = cx + 2; xy->y = cy;
-		push_item(wall_l, xy);
-		wc++;
-	}
-	
-	set_list_len(wall_l, wc);
+	//yeah, returning pointer through a getter, ok
+	return maze->maze;	
 }
+
+LIST
+get_maze_walllist(MAZE maze)
+{
+	return maze->walls;
+}
+
+size_t
+get_maze_w(MAZE maze)
+{
+	return maze->w;	
+}
+
+size_t	
+get_maze_h(MAZE maze)
+{
+	return maze->h;	
+}
+
 
 CELL_XY
-get_random_cell_from_walllist(MAZE maze)
+create_cell(size_t x, size_t y)
 {
-	NODE item = pop_random_item(maze->walls);
-	
-	CELL_XY ret_data = get_item_data(item);
-	
-	free(item);
-	
-	return ret_data;
+	CELL_XY xy = calloc(1, sizeof(*xy));
+	assert(xy != NULL);
+	xy->x = x;
+	xy->y = y;
+	return xy;
 }
 
-CELL_XY
-get_rand_path_neighbour(MAZE maze, CELL_XY cell)
+size_t
+get_cell_x(CELL_XY cell)
 {
-	size_t cx = cell->x;
-	size_t cy = cell->y;
-	char *arr = maze->maze;
-	size_t w  = maze->w;
-	size_t h  = maze->h;
-	
-	size_t *x_neighb = calloc(4, sizeof(*x_neighb));
-	size_t *y_neighb = calloc(4, sizeof(*y_neighb));
-	size_t n = 0;
-		
-	if(cy > 1 && arr[w * (cy-2) + cx] == PATH) {
-		x_neighb[n] = cx;
-		y_neighb[n] = cy - 2;
-		n++;
-	}
-	if(cy < h-2 && arr[w * (cy+2) + cx] == PATH) {
-		x_neighb[n] = cx;
-		y_neighb[n] = cy + 2;
-		n++;
-	}
-	if(cx > 1 && arr[w * cy + (cx-2)] == PATH) {
-		x_neighb[n] = cx - 2;
-		y_neighb[n] = cy;
-		n++;
-	}
-	if(cx < w-2 && arr[w * cy + (cx+2)] == PATH) {
-		x_neighb[n] = cx + 2;
-		y_neighb[n] = cy;
-		n++;
-	}
-	
-	CELL_XY ret;
-	if(n == 0)	{
-		ret = NULL;
-		goto clean_and_return;
-	}
-	
-	size_t rn = get_rand_num(0, n);
-	ret = calloc(1, sizeof(*ret));
-	assert(ret != NULL);
-	
-	ret->x = x_neighb[rn];
-	ret->y = y_neighb[rn];
-	
-clean_and_return:
-	free(x_neighb);
-	free(y_neighb);
-		
-	return ret;
+	return cell->x;
 }
 
-void
-connect_cells(MAZE maze, CELL_XY wall_c, CELL_XY path_c)
+size_t
+get_cell_y(CELL_XY cell)
 {
-	char *arr = maze->maze;
-	size_t w  = maze->w;
-	size_t h  = maze->h;
-	size_t wx = wall_c->x;
-	size_t wy = wall_c->y;
-	size_t px = path_c->x;
-	size_t py = path_c->y;
-	size_t nx = wx; 
-	size_t ny = wy;
-	
-	int tile_p = PATH;
-	int tile_w = PATH;
-
-	
-	if( wx == 0 || wx == w-1 || wy == 0 || wy == h-1 )
-		tile_w = WALL_PUSHBACK;
-	if( px == 0 || px == w-1 || py == 0 || py == h-1 )
-		tile_p = WALL_PUSHBACK;
-
-	if(wx == px) 
-		ny = wy > py ? py + 1 : wy + 1;
-	else
-		nx = wx > px ? px + 1 : wx + 1;
-	
-	arr[w * ny + nx] = tile_p;
-	arr[w * wy + wx] = tile_w;
+	return cell->y;	
 }
+
+void		
+set_cell_x(CELL_XY cell, size_t x)
+{
+	cell->x = x;	
+}
+
+void 
+set_cell_y(CELL_XY cell, size_t y)
+{
+	cell->y = y;
+}
+
+
 
 static void
 find_start_and_end_points(MAZE maze)
@@ -301,7 +189,7 @@ find_start_and_end_points(MAZE maze)
 	maze->ey = end_y;
 }
 
-void
+static void
 prepare_correct_path(MAZE maze)
 {
 	char * arr		= maze->maze;
@@ -389,7 +277,7 @@ int main(void)
 {
 	MAZE maze = create_maze(100, 50);	
 	fill_maze(maze, WALL);
-	build_maze(maze);
+	build_maze(maze, prims_algo);
 	prepare_correct_path(maze);
 	print_maze(maze);
 	delete_maze(maze);
