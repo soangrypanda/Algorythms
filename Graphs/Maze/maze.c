@@ -6,59 +6,12 @@ struct maze {
 	LIST    walls;
 	size_t	w;
 	size_t	h;
-	size_t	wc;
 	size_t 	sx, sy, ex, ey;
 };
 
-struct node {
-	size_t 			x, y;
-	struct node* 	next;
+struct cell_coord {
+	size_t x, y;	
 };
-
-struct list {
-	struct node **list;
-	struct node	*last;
-};
-
-void
-push_item(LIST list, size_t x, size_t y)
-{
-	struct node *item = calloc(1, sizeof(*item));
-	assert(item != NULL);
-	
-	item->x = x;
-	item->y = y;
-	item->next = *list->list;
-	*list->list = item;
-}
-
-void
-delete_list_do(LIST list);
-void
-delete_list(LIST list)
-{
-	delete_list_do(list);
-	free(list);
-}
-
-void
-delete_list_do(LIST list)
-{
-	NODE *head = list->list;
-	while(*head != NULL) {
-		NODE tmp = *head;
-		head	 = &(*head)->next;
-		free(tmp);	
-	}	
-}
-
-void
-delete_maze(MAZE maze) 
-{
-	delete_list(maze->walls);
-	free(maze->maze);
-	free(maze);
-}
 
 enum maze_tiles { WALL 			= '#', 
 				  PATH 			= '*', 
@@ -67,6 +20,15 @@ enum maze_tiles { WALL 			= '#',
 				  END_POS		= 'E',
 				  ANCHOR		= 'A'
 				};
+
+
+void push_cell_walls(MAZE maze, size_t cx, size_t cy);
+CELL_XY get_random_cell_from_walllist(MAZE maze);
+CELL_XY get_rand_path_neighbour(MAZE maze, CELL_XY cell);
+void connect_cells(MAZE maze, CELL_XY wall_c, CELL_XY path_c);
+static void make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2);
+static void find_start_and_end_points(MAZE maze);
+
 
 MAZE
 create_maze(size_t w, size_t h)
@@ -78,16 +40,10 @@ create_maze(size_t w, size_t h)
 	char *arr	= calloc(size, sizeof(*arr));
 	assert(arr	!= NULL);
 	
-	LIST list = calloc(1, sizeof(*list));
-	assert(list != NULL);		
-	list->last	= NULL;
-	list->list = &list->last;
-	
 	maze->maze	= arr;
 	maze->w		= w;
 	maze->h		= h;
-	maze->walls	= list;
-	maze->wc	= 0;
+	maze->walls	= create_list();
 	maze->sx = maze->sy = maze->ex = maze-> ey = 0;
 	
 	return maze;
@@ -102,6 +58,57 @@ fill_maze(MAZE maze, int tile)
 	size_t m_size	= maze->w * maze->h;
 	
 	memset(m_arr, tile, m_size);
+}
+
+void
+build_maze(MAZE maze)
+{
+	char *arr		= maze->maze;
+	size_t w		= maze->w;
+	size_t h		= maze->h;
+	size_t x		= get_rand_num(0, w-1);
+	size_t y		= get_rand_num(0, h-1);
+	LIST wall_l		= maze->walls;
+	
+	arr[w * y + x] = PATH;
+	push_cell_walls(maze, x, y);
+	
+	while(get_list_len(wall_l) != 0) {
+		CELL_XY wall_c = get_random_cell_from_walllist(maze);
+		CELL_XY path_c = get_rand_path_neighbour(maze, wall_c);
+		if(path_c == NULL) {
+			free(wall_c);
+		}
+		else {
+			connect_cells(maze, wall_c, path_c);
+			push_cell_walls(maze, wall_c->x, wall_c->y);
+
+			free(wall_c);
+			free(path_c);
+		}
+	}	
+	
+	for(size_t i = 0; i < w; ++i) {
+		if(arr[i] 			!= PATH)	arr[i] 			= WALL;
+		if(arr[w*(h-1)+i] 	!= PATH) 	arr[w*(h-1)+i] 	= WALL;
+	}
+	
+	for(size_t i = 0; i < h; ++i) {
+		if(arr[w*i]			!= PATH)	arr[w*i]		= WALL;
+		if(arr[w*i+w-1]		!= PATH)	arr[w*i+w-1]	= WALL;
+	}
+	
+	find_start_and_end_points(maze);
+	arr[w*maze->sy + maze->sx] = START_POS;
+	arr[w*maze->ey + maze->ex] = END_POS;
+}
+
+void
+delete_maze(MAZE maze) 
+{
+	delete_list(maze->walls);
+	free(maze->maze);
+	free(maze);
 }
 
 void
@@ -123,69 +130,61 @@ print_maze(MAZE maze)
 	free(m_line);
 }
 
+
+
+
+
 void
 push_cell_walls(MAZE maze, size_t cx, size_t cy)
 {
 	LIST_S *wall_l 	= maze->walls;
-	size_t wc		= maze->wc;
+	size_t wc		= get_list_len(wall_l);
 	char *arr		= maze->maze;
 	size_t w		= maze->w;
 	size_t h		= maze->h;
 	
 	if(cy > 1 && arr[w * (cy-2) + cx] == WALL) {
-		push_item(wall_l, cx, cy - 2);
+		CELL_XY xy = calloc(1, sizeof(*xy));
+		xy->x = cx; xy->y = cy - 2;
+		push_item(wall_l, xy);
 		wc++;
 	}
 	if(cy < h-2 && arr[w * (cy+2) + cx] == WALL) {
-		push_item(wall_l, cx, cy + 2);
+		CELL_XY xy = calloc(1, sizeof(*xy));
+		xy->x = cx; xy->y = cy + 2;
+		push_item(wall_l, xy);
 		wc++;
 	}
 	if(cx > 1 && arr[w * cy + (cx-2)] == WALL) {
-		push_item(wall_l, cx - 2, cy);
+		CELL_XY xy = calloc(1, sizeof(*xy));
+		xy->x = cx - 2; xy->y = cy;
+		push_item(wall_l, xy);
 		wc++;
 	}
 	if(cx < w-2 && arr[w * cy + (cx+2)] == WALL) {
-		push_item(wall_l, cx + 2, cy);
+		CELL_XY xy = calloc(1, sizeof(*xy));
+		xy->x = cx + 2; xy->y = cy;
+		push_item(wall_l, xy);
 		wc++;
 	}
 	
-	maze->wc = wc;
+	set_list_len(wall_l, wc);
 }
 
-
-
-unsigned int seed;
-static void
-init_rand(void) 
+CELL_XY
+get_random_cell_from_walllist(MAZE maze)
 {
-    seed = time(NULL);
-}
-
-static size_t
-get_rand_num(size_t l, size_t h)
-{
-    return l + rand_r(&seed) % h;
-}
-
-NODE
-get_random_cell_wall_from_list(MAZE maze)
-{
-	size_t node_n = get_rand_num(0, maze->wc);
-	NODE *tmp = maze->walls->list;
-	while(node_n != 0) {
-		tmp = &((*tmp)->next);
-		node_n--;
-	}
-	NODE ret = *tmp;
-	*tmp = ret->next;
-	ret->next = NULL;
+	NODE item = pop_random_item(maze->walls);
 	
-	maze->wc--;
-	return ret;
+	CELL_XY ret_data = get_item_data(item);
+	
+	free(item);
+	
+	return ret_data;
 }
 
-NODE
-find_rand_path_neighbour(MAZE maze, NODE cell)
+CELL_XY
+get_rand_path_neighbour(MAZE maze, CELL_XY cell)
 {
 	size_t cx = cell->x;
 	size_t cy = cell->y;
@@ -218,7 +217,7 @@ find_rand_path_neighbour(MAZE maze, NODE cell)
 		n++;
 	}
 	
-	NODE ret;
+	CELL_XY ret;
 	if(n == 0)	{
 		ret = NULL;
 		goto clean_and_return;
@@ -230,7 +229,6 @@ find_rand_path_neighbour(MAZE maze, NODE cell)
 	
 	ret->x = x_neighb[rn];
 	ret->y = y_neighb[rn];
-	ret->next = NULL;
 	
 clean_and_return:
 	free(x_neighb);
@@ -240,9 +238,9 @@ clean_and_return:
 }
 
 void
-connect_cells(MAZE maze, NODE wall_c, NODE path_c)
+connect_cells(MAZE maze, CELL_XY wall_c, CELL_XY path_c)
 {
-	char *arr	= maze->maze;
+	char *arr = maze->maze;
 	size_t w  = maze->w;
 	size_t h  = maze->h;
 	size_t wx = wall_c->x;
@@ -270,69 +268,8 @@ connect_cells(MAZE maze, NODE wall_c, NODE path_c)
 	arr[w * wy + wx] = tile_w;
 }
 
-void
-build_maze(MAZE maze)
-{
-	char *arr		= maze->maze;
-	size_t w		= maze->w;
-	size_t h		= maze->h;
-	size_t x		= get_rand_num(0, w-1);
-	size_t y		= get_rand_num(0, h-1);
-	
-	arr[w * y + x] = PATH;
-	push_cell_walls(maze, x, y);
-	
-	while(maze->wc != 0) {
-		NODE wall_c = get_random_cell_wall_from_list(maze);
-		NODE path_c = find_rand_path_neighbour(maze, wall_c);
-		if(path_c == NULL) {
-			free(wall_c);
-		}
-		else {
-			connect_cells(maze, wall_c, path_c);
-			push_cell_walls(maze, wall_c->x, wall_c->y);
-
-			free(wall_c);
-			free(path_c);
-		}
-	}	
-	
-	for(size_t i = 0; i < w; ++i) {
-		if(arr[i] 			!= PATH)	arr[i] 			= WALL;
-		if(arr[w*(h-1)+i] 	!= PATH) 	arr[w*(h-1)+i] 	= WALL;
-	}
-	
-	for(size_t i = 0; i < h; ++i) {
-		if(arr[w*i]			!= PATH)	arr[w*i]		= WALL;
-		if(arr[w*i+w-1]		!= PATH)	arr[w*i+w-1]	= WALL;
-	}
-	
-	arr[w*maze->sy + maze->sx] = START_POS;
-	arr[w*maze->ey + maze->ex] = END_POS;
-}
-
-void
-make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2)
-{
-	char *arr	= maze->maze;
-	size_t w	= maze->w;
-	size_t h	= maze->h;
-	size_t ys	= y1 < y2 ? y1 : y2;
-	size_t ye	= y1 < y2 ? y2 : y1;
-	
-	for(; ys <= ye; ++ys) {
-		arr[w*ys+x1] = PATH;	
-	}
-	
-	size_t xs	= x1 < x2 ? x1 : x2;
-	size_t xe	= x1 < x2 ? x2 : x1;
-	
-	for(; xs <=xe; ++xs)
-		arr[w*y2+xs] = PATH;
-}
-
-void
-prepare_correct_path(MAZE maze)
+static void
+find_start_and_end_points(MAZE maze)
 {
 	char * arr	= maze->maze;
 	size_t w	= maze->w;
@@ -358,8 +295,22 @@ prepare_correct_path(MAZE maze)
 	if(dxe > dye)	end_x = 0 + (w-1) * (start_x * h > start_y * w ? 0 : 1);
 	else			end_y = 0 + (h-1) * (end_x * h > end_y * w ? 0 : 1);	
 	
-	arr[w*start_y + start_x] 	= START_POS;
-	arr[w*end_y + end_x] 		= END_POS;
+	maze->sx = start_x;
+	maze->sy = start_y;
+	maze->ex = end_x;
+	maze->ey = end_y;
+}
+
+void
+prepare_correct_path(MAZE maze)
+{
+	char * arr		= maze->maze;
+	size_t w		= maze->w;
+	size_t h		= maze->h;
+	size_t start_x 	= maze->sx;
+	size_t start_y	= maze->sy;
+	size_t end_x	= maze->ex;
+	size_t end_y	= maze->ey;
 	
 	size_t n_anchors 	= 0;
 	size_t size			= w * h;
@@ -408,23 +359,38 @@ prepare_correct_path(MAZE maze)
 	arr[w*start_y + start_x] 	= START_POS;
 	arr[w*end_y + end_x] 		= END_POS;	
 	
-	maze->sx = start_x;
-	maze->sy = start_y;
-	maze->ex = end_x;
-	maze->ey = end_y;
-	
 	free(axarr);
 	free(ayarr);	
 }
+
+static void
+make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2)
+{
+	char *arr	= maze->maze;
+	size_t w	= maze->w;
+	size_t h	= maze->h;
+	size_t ys	= y1 < y2 ? y1 : y2;
+	size_t ye	= y1 < y2 ? y2 : y1;
+	
+	for(; ys <= ye; ++ys) {
+		arr[w*ys+x1] = PATH;	
+	}
+	
+	size_t xs	= x1 < x2 ? x1 : x2;
+	size_t xe	= x1 < x2 ? x2 : x1;
+	
+	for(; xs <=xe; ++xs)
+		arr[w*y2+xs] = PATH;
+}
+
 
 
 int main(void)
 {
 	MAZE maze = create_maze(100, 50);	
-	init_rand();
 	fill_maze(maze, WALL);
-	prepare_correct_path(maze);
 	build_maze(maze);
+	prepare_correct_path(maze);
 	print_maze(maze);
 	delete_maze(maze);
 }
