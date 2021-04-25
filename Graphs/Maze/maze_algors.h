@@ -2,8 +2,7 @@
 #define MAZE_ALGORS_H_SENTRY
 
 
-void	prims_algo	(void *maze);
-
+void    prims_algo  (void *maze);
 
 
 #endif
