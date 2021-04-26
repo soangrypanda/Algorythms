@@ -16,7 +16,7 @@ void
 prims_algo(void* maze_p)
 {
     MAZE maze       = (MAZE) maze_p;
-    char *arr       = get_maze_arr(maze);
+    cell_t *arr     = get_maze_arr(maze);
     size_t w        = get_maze_w(maze);
     size_t h        = get_maze_h(maze);
     LIST wall_l     = get_maze_walllist(maze);
@@ -59,7 +59,7 @@ prims_algo(void* maze_p)
 static void
 push_cell_walls(MAZE maze, size_t cx, size_t cy)
 {
-    char *arr       = get_maze_arr(maze);
+    cell_t *arr     = get_maze_arr(maze);
     size_t w        = get_maze_w(maze);
     size_t h        = get_maze_h(maze);
     LIST wall_l     = get_maze_walllist(maze);
@@ -104,11 +104,11 @@ get_random_cell_from_walllist(MAZE maze)
 static CELL_XY
 get_rand_path_neighbour(MAZE maze, CELL_XY cell)
 {
-    size_t cx = get_cell_x(cell);
-    size_t cy = get_cell_y(cell);
-    char *arr = get_maze_arr(maze);
-    size_t w  = get_maze_w(maze);
-    size_t h  = get_maze_h(maze);
+    size_t cx   = get_cell_x(cell);
+    size_t cy   = get_cell_y(cell);
+    cell_t *arr = get_maze_arr(maze);
+    size_t w    = get_maze_w(maze);
+    size_t h    = get_maze_h(maze);
     
     size_t *x_neighb = calloc(4, sizeof(*x_neighb));
     size_t *y_neighb = calloc(4, sizeof(*y_neighb));
@@ -154,15 +154,15 @@ clean_and_return:
 static void
 connect_cells(MAZE maze, CELL_XY wall_c, CELL_XY path_c)
 {
-    char *arr = get_maze_arr(maze);
-    size_t w  = get_maze_w(maze);
-    size_t h  = get_maze_h(maze);
-    size_t wx = get_cell_x(wall_c);
-    size_t wy = get_cell_y(wall_c);
-    size_t px = get_cell_x(path_c);
-    size_t py = get_cell_y(path_c);
-    size_t nx = wx; 
-    size_t ny = wy;
+    cell_t *arr = get_maze_arr(maze);
+    size_t w    = get_maze_w(maze);
+    size_t h    = get_maze_h(maze);
+    size_t wx   = get_cell_x(wall_c);
+    size_t wy   = get_cell_y(wall_c);
+    size_t px   = get_cell_x(path_c);
+    size_t py   = get_cell_y(path_c);
+    size_t nx   = wx; 
+    size_t ny   = wy;
     
     int tile_p = PATH;
     int tile_w = PATH;

@@ -5,7 +5,7 @@
 
 MAZE_S {
     #undef MAZE_S
-    char *  maze;
+    cell_t *maze;
     LIST    walls;
     size_t  w;
     size_t  h;
@@ -44,7 +44,7 @@ create_maze(size_t w, size_t h)
     MAZE maze   = calloc(1, sizeof(*maze));
     assert(maze != NULL);
     
-    char *arr   = calloc(size, sizeof(*arr));
+    cell_t *arr = calloc(size, sizeof(*arr));
     assert(arr  != NULL);
     
     maze->maze  = arr;
@@ -61,7 +61,7 @@ fill_maze(MAZE maze, int tile)
 {
     if(maze == NULL)    return;
     
-    char *m_arr     = maze->maze;
+    cell_t *m_arr   = maze->maze;
     size_t m_size   = maze->w * maze->h;
     
     memset(m_arr, tile, m_size);
@@ -70,7 +70,7 @@ fill_maze(MAZE maze, int tile)
 void
 build_maze(MAZE maze, mazebuilder algo)
 {
-    char *arr       = maze->maze;
+    cell_t *arr     = maze->maze;
     size_t w        = maze->w;
     size_t h        = maze->h;
     
@@ -94,11 +94,11 @@ print_maze(MAZE maze)
 {
     if(maze == NULL)    return;
 
-    char *m_arr = maze->maze;
-    size_t w    = maze->w;
-    size_t h    = maze->h;
-    maze->w     = w;
-    char *m_line = calloc(w + 1, sizeof(*m_line));
+    cell_t *m_arr = maze->maze;
+    size_t w      = maze->w;
+    size_t h      = maze->h;
+    maze->w       = w;
+    char *m_line  = calloc(w + 1, sizeof(*m_line));
     assert(m_line != NULL);
     
     for(size_t i = 0; i < h; ++i) {
@@ -112,7 +112,7 @@ print_maze(MAZE maze)
 /* MAZE AND CELL_XY GETTERS AND SETTERS */
 
 //yeah, returning pointer through a getter, ok
-char*       
+cell_t*       
 get_maze_arr(MAZE maze)             { return maze->maze; }
 LIST
 get_maze_walllist(MAZE maze)        { return maze->walls; }
@@ -137,7 +137,7 @@ set_cell_y(CELL_XY cell, size_t y)  { cell->y = y; }
 void
 prepare_correct_path(MAZE maze)
 {
-    char * arr      = maze->maze;
+    cell_t *arr     = maze->maze;
     size_t w        = maze->w;
     size_t h        = maze->h;
     size_t start_x  = maze->sx;
@@ -198,7 +198,7 @@ prepare_correct_path(MAZE maze)
 static void
 find_start_and_end_points(MAZE maze)
 {
-    char * arr  = maze->maze;
+    cell_t *arr = maze->maze;
     size_t w    = maze->w;
     size_t h    = maze->h;
     
@@ -231,7 +231,7 @@ find_start_and_end_points(MAZE maze)
 static void
 make_path(MAZE maze, size_t x1, size_t y1, size_t x2, size_t y2)
 {
-    char *arr   = maze->maze;
+    cell_t *arr = maze->maze;
     size_t w    = maze->w;
     size_t h    = maze->h;
     size_t ys   = y1 < y2 ? y1 : y2;

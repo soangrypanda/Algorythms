@@ -16,8 +16,11 @@ typedef struct maze         MAZE_S;
 typedef MAZE_S*             MAZE;
 typedef struct cell_coord   CELL_XY_S;
 typedef CELL_XY_S*          CELL_XY;
+typedef	char				cell_t;
 
 typedef void (*mazebuilder) (void *maze);
+
+
 
 enum maze_tiles { WALL          = '#', 
                   PATH          = '*', 
@@ -37,7 +40,7 @@ void        build_maze              (MAZE maze, mazebuilder algo);
 void        print_maze              (MAZE maze);
 void        prepare_correct_path    (MAZE maze);
 
-char*       get_maze_arr            (MAZE maze);
+cell_t*     get_maze_arr            (MAZE maze);
 LIST        get_maze_walllist       (MAZE maze);
 size_t      get_maze_w              (MAZE maze);
 size_t      get_maze_h              (MAZE maze);
