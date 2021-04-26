@@ -70,6 +70,20 @@ push_item(LIST list, void *data)
     list->len++;
 }
 
+void *
+pop_item(LIST list)
+{
+    NODE *head  = list->list;
+    NODE ret    = *head;
+    *head       = ret->next;
+    ret->next   = NULL;
+    
+    void *ret_data    = ret->data;
+    free(ret);
+    
+    return ret_data;
+}
+
 NODE
 pop_random_item(LIST list)
 {   

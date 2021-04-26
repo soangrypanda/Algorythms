@@ -19,6 +19,7 @@ void    set_item_data   (NODE item, void *data);
 LIST    create_list     (void);
 void    delete_list     (LIST list);
 void    push_item       (LIST list, void *data);
+void*	pop_item		(LIST list);
 NODE    pop_random_item (LIST list);
 size_t  get_list_len    (LIST list);
 void    set_list_len    (LIST list, size_t len);

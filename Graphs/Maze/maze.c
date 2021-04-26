@@ -120,7 +120,9 @@ size_t
 get_maze_w(MAZE maze)               { return maze->w; }
 size_t  
 get_maze_h(MAZE maze)               { return maze->h; }
-
+void
+get_maze_start_and_end	(MAZE maze, size_t *sx, size_t *sy, size_t *ex, size_t *ey) 
+{ *sx = maze->sx; *sy = maze->sy; *ex = maze->ex; *ey = maze->ey;}
 
 size_t
 get_cell_x(CELL_XY cell)            { return cell->x; }

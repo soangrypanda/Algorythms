@@ -44,6 +44,7 @@ cell_t*     get_maze_arr            (MAZE maze);
 LIST        get_maze_walllist       (MAZE maze);
 size_t      get_maze_w              (MAZE maze);
 size_t      get_maze_h              (MAZE maze);
+void		get_maze_start_and_end	(MAZE maze, size_t *sx, size_t *sy, size_t *ex, size_t *ey);
 
 size_t      get_cell_x              (CELL_XY cell);
 size_t      get_cell_y              (CELL_XY cell);
