@@ -4,6 +4,7 @@ struct ht_item_s {
     void *  data;
     char *  key;
     size_t  size;
+    size_t  k_size;
 };
 
 struct ht_s {
@@ -52,6 +53,7 @@ static HT_ITEM          create_item             (void *data, size_t data_size, c
 static void             delete_item             ( HT_ITEM * item_p);
 
 /* HT */
+static char *           get_bytes_as_string     (void *k, size_t k_size);
 static char             change_ht_size          (HT ht, int change_how);
 static HT_ITEM *        traverse_ht             (HT ht, char *key, int mode);
 static char             if_found_for_insert     (HT ht, char *key, size_t i);
@@ -87,9 +89,9 @@ create_item(void *data, size_t data_size, char *key)
         exit(EXIT_FAILURE);
     }
     
-    item->data = data;
-    item->size = data_size;
-    item->key  = key;
+    item->data =   data;
+    item->size =   data_size;
+    item->key  =   key;
     
     return item;
 }
@@ -153,14 +155,20 @@ delete_ht_do(HT ht)
 }
 
 signed char
-insert_ht_item(HT ht, void *data, size_t data_size, char *key)
+insert_ht_item_do(HT ht, void *data, size_t data_size, void *k, size_t k_size)
 {
     #ifdef DEBUG
         printf("\nEntering insert_ht_item()!\n");
+        printf("\t data size is %zu and key size is %zu\n", data_size, k_size);
     #endif
     
     signed char ret;
-    
+   
+    char *key        = get_bytes_as_string(k, k_size); 
+    #ifdef DEBUG
+        printf("\tPrinting byte representation - %s\n", key);
+    #endif
+
     HT_ITEM * item_p = traverse_ht(ht, key, ht_insert_m);
     
     if(item_p != NULL) {
@@ -185,7 +193,7 @@ insert_ht_item(HT ht, void *data, size_t data_size, char *key)
 }
 
 signed char
-delete_ht_item(HT ht, char *key)
+delete_ht_item_do(HT ht, void *k, size_t k_size)
 {
     #ifdef DEBUG
         printf("\nEntering delete_ht_item()!\n");
@@ -193,6 +201,8 @@ delete_ht_item(HT ht, char *key)
     
     signed char ret;
     
+    char *key        = get_bytes_as_string(k, k_size); 
+
     HT_ITEM *item_p = traverse_ht(ht, key, ht_delete_m);
     if(item_p != NULL) {
         delete_item(item_p);
@@ -213,11 +223,12 @@ delete_ht_item(HT ht, char *key)
         change_ht_size(ht, DECREASE_HT);
     }
     
+    free(key); 
     return ret;
 }
 
 void *
-search_ht_item(HT ht, char *key, size_t *sp)
+search_ht_item_do(HT ht, void *k, size_t k_size, size_t *sp)
 {
     #ifdef DEBUG
         printf("\nEntering search_ht_item()!\n");
@@ -225,6 +236,7 @@ search_ht_item(HT ht, char *key, size_t *sp)
     
     void *ret;
     
+    char *key       = get_bytes_as_string(k, k_size); 
     HT_ITEM *item_p = traverse_ht(ht, key, ht_search_m);
     
     if(item_p != NULL) {
@@ -250,7 +262,8 @@ search_ht_item(HT ht, char *key, size_t *sp)
             printf("\t item is not in in ht!\n");
         #endif
     }
-    
+
+    free(key);    
     return ret;
 }
 
@@ -283,6 +296,23 @@ print_ht(HT ht)
 }
 
 /* HT INTERNAL IMPLEMENTATIONS */
+
+static char *
+get_bytes_as_string(void *k, size_t k_size)
+{
+    #ifdef DEBUG
+        printf("\nEntering get_bytes_as_string()!\n");
+    #endif  
+    char *ret   = calloc(k_size + 1, sizeof(*ret));
+    assert(ret != NULL);
+    
+    char *key   = (char *) k;
+
+    memmove(ret, key, k_size);
+    ret[k_size] = 0;
+
+    return ret;
+}
 
 static char
 change_ht_size(HT ht, int change_how)
@@ -461,7 +491,7 @@ fill_ht_with_r_d(HT ht, size_t size, int32_t min, int32_t max)
             printf("key is %s and data is %s\n\n", key, data);
         #endif
         
-        char ret = insert_ht_item(ht, data, d_len, key);    
+        char ret = insert_ht_item(ht, data, key);    
         if(ret == -1) {
             free(key);
             free(data);
