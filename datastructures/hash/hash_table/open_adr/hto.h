@@ -26,7 +26,9 @@ HT          init_ht         (size_t size);
 #define     delete_ht(ht)    ht = delete_ht_do(ht);
 HT          delete_ht_do    (HT ht);
 
-#define     SIZE_OF(obj_p) ( sizeof(*obj_p) != 1 ? sizeof(*obj_p) : strlen(obj_p) )
+/* ok, this weird cast to char * is to stop the compiler
+ * cranking about wrong strlen input */
+#define     SIZE_OF(obj_p)  ( sizeof(*obj_p) != 1 ? sizeof(*obj_p) : strlen((char *)obj_p) )
 
 #define     insert_ht_item(ht, dp, kp) insert_ht_item_do(ht, dp, SIZE_OF(dp), kp, SIZE_OF(kp))
 signed char insert_ht_item_do  (HT ht, void *data, size_t data_size, void *k, size_t k_size);
@@ -37,9 +39,9 @@ signed char delete_ht_item_do  (HT ht, void *k, size_t k_size);
 #define     search_ht_item(ht, kp, sp) search_ht_item_do(ht, kp, SIZE_OF(kp), sp)
 void *      search_ht_item_do  (HT ht, void *k, size_t k_size, size_t *sp);
 
-void        print_ht        (HT ht);
+void        print_ht           (HT ht);
 
-char **     fill_ht_with_r_d(HT ht, size_t size, int32_t min, int32_t max);
+char **     fill_ht_with_r_d   (HT ht, size_t size, int32_t min, int32_t max);
 
 
 #endif

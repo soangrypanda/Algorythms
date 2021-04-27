@@ -248,9 +248,10 @@ search_ht_item_do(HT ht, void *k, size_t k_size, size_t *sp)
             perror("search_ht_item - posix_memalign");
             return NULL;
         }
-        memcpy(tmp, item->data, size);              /* this is one shady stuff, probably should store alignof item in item. */
+        memcpy(tmp, item->data, size);              
+        /* this is one shady stuff, probably should store alignof item in item. */
         ret = tmp;
-        *sp          = size;
+        *sp = size;
         #ifdef DEBUG
             printf("\t item found in ht!\n");
         #endif
