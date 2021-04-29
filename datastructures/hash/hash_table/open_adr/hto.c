@@ -242,8 +242,12 @@ search_ht_item_do(HT ht, void *k, size_t k_size, size_t *sp)
     if(item_p != NULL) {
         HT_ITEM item = *item_p;
         size_t size  = item->size;
+        size_t align = 1 << (1 + (size_t)floor(log2(size)));
+        if(align < size) 
+            align = alignof(max_align_t);
+
         void *tmp;
-        int r = posix_memalign(&tmp, alignof(max_align_t), size);
+        int r = posix_memalign(&tmp, align, size);
         if(r != 0) {
             perror("search_ht_item - posix_memalign");
             return NULL;
@@ -461,11 +465,11 @@ prehash(char *key)
  
 /* MISCELANEOUS EXTERNAL IMPLEMENTATIONS */
 
-unsigned int seed;
+unsigned int seed_ht_open_adr;
 char **
 fill_ht_with_r_d(HT ht, size_t size, int32_t min, int32_t max)
 {
-    if(!seed)   init_rand();
+    if(!seed_ht_open_adr)   init_rand();
     
     if(max==0)  max = size;
     
@@ -546,11 +550,11 @@ next_prime(uint64_t x)
 static void
 init_rand(void) 
 {
-    seed = time(NULL);
+    seed_ht_open_adr = time(NULL);
 }
 
 static int32_t
 get_rand_num(int32_t l, int32_t h)
 {
-    return l + rand_r(&seed) % h;
+    return l + rand_r(&seed_ht_open_adr) % h;
 }
