@@ -8,13 +8,18 @@ NODE_S {
     #undef NODE_S
     void*           data;
     NODE            next;
+    size_t          type_size; 
+    size_t          type_align;
 };
 
 LIST_S {
     #undef LIST_S
-    NODE*           list;
-    NODE            last;
+    NODE*           head;
+    NODE*           tail;
+    NODE            dummy;
     size_t          len;
+    size_t          type_size; 
+    size_t          type_align;
 };
 
 
@@ -36,6 +41,8 @@ create_node(void *data)
     NODE item = calloc(1, sizeof(*item));
     assert(item != NULL);
     item->data  = data; 
+    item->type_size  = sizeof(*item);
+    item->type_align = alignof(*item);
     return item;
 }
 
@@ -45,11 +52,15 @@ create_node(void *data)
 LIST
 create_list(void)
 {
-    LIST list = calloc(1, sizeof(*list));
+    LIST list   = calloc(1, sizeof(*list));
     assert(list != NULL);       
-    list->last  = NULL;
-    list->list  = &list->last;
+
+    list->dummy = NULL;
+    list->head  = &list->dummy;
+    list->tail  = &list->dummy;
     list->len   = 0;
+    list->type_size  = sizeof(*list);
+    list->type_align = alignof(*list);
     return list;
 }
 
@@ -63,15 +74,51 @@ delete_list(LIST list)
 void
 push_item(LIST list, void *data)
 {
-    NODE item   = create_node(data);
-    item->next  = *list->list;
-    *list->list = item;
+    NODE tmp    = *list->head;
+    *list->head = calloc(1, sizeof(**list->head));
+    NODE item   = *list->head;
+    assert(item != NULL);
+
+    item->data  = data;
+    item->next  = tmp;
     
     list->len++;
 }
 
 void *
 pop_item(LIST list)
+{
+    NODE *head  = list->head;
+    NODE ret    = *head;
+    if(ret == NULL)
+        return ret;
+    *head       = ret->next;
+    ret->next   = NULL;
+    
+    void *ret_data    = ret->data;
+    free(ret);
+    
+    list->len--; 
+    return ret_data;
+}
+
+void
+put_item(LIST list, void *data)
+{
+    *list->tail = calloc(1, sizeof(**list->tail));
+    NODE item = *list->tail;
+    assert(item != NULL);
+    
+    item->data  = data;
+    item->next  = NULL;
+
+    list->tail  = &(item->next);
+
+    list->len++;
+}
+/*
+void *
+get_item(LIST list)
 {
     NODE *head  = list->list;
     NODE ret    = *head;
@@ -83,12 +130,12 @@ pop_item(LIST list)
     
     return ret_data;
 }
-
+*/
 NODE
 pop_random_item(LIST list)
 {   
     size_t node_n = get_rand_num(0, list->len);
-    NODE *tmp = list->list;
+    NODE *tmp = list->head;
     while(node_n != 0) {
         tmp = &((*tmp)->next);
         node_n--;
@@ -109,13 +156,13 @@ set_list_len(LIST list, size_t len) { list->len = len; }
 static void
 delete_list_do(LIST list)
 {
-    NODE *head = list->list;
-    while(*head != NULL) {
-        NODE tmp = *head;
-        head     = &(*head)->next;
+    NODE head = *list->head;
+    while(head != NULL) {
+        NODE tmp = head;
+        head     = head->next;
         free(tmp->data);
-        free(tmp);  
-    }   
+        free(tmp);
+    }
 }
 
 /* RANDOM NUMBER GENERATOR */

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <inttypes.h>
+#include <stdalign.h>
 
 #include "maze_algors.h"
 #include "utils.h"
@@ -32,7 +33,7 @@ enum maze_tiles { WALL          = '#',
 
 
 CELL_XY     create_cell             (size_t x, size_t y);
-
+char        cellcmp                 (CELL_XY x, CELL_XY y);
 MAZE        create_maze             (size_t w, size_t h);
 void        delete_maze             (MAZE maze);
 void        fill_maze               (MAZE maze, int tile);
@@ -45,11 +46,12 @@ LIST        get_maze_walllist       (MAZE maze);
 size_t      get_maze_w              (MAZE maze);
 size_t      get_maze_h              (MAZE maze);
 void		get_maze_start_and_end	(MAZE maze, size_t *sx, size_t *sy, size_t *ex, size_t *ey);
-
+size_t      get_maze_size           (MAZE maze);
 size_t      get_cell_x              (CELL_XY cell);
 size_t      get_cell_y              (CELL_XY cell);
+void        get_cell_xy             (CELL_XY, size_t *x, size_t *y);
 void        set_cell_x              (CELL_XY cell, size_t x);
 void        set_cell_y              (CELL_XY cell, size_t y);
-
+size_t      get_xy_size             (CELL_XY cell);
 
 #endif

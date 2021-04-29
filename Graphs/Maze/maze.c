@@ -5,16 +5,18 @@
 
 MAZE_S {
     #undef MAZE_S
-    cell_t *maze;
+    cell_t  *maze;
     LIST    walls;
     size_t  w;
     size_t  h;
     size_t  sx, sy, ex, ey;
+    size_t  type_size; 
 };
 
 CELL_XY_S {
     #undef CELL_XY_S
-    size_t x, y;    
+    size_t  x, y;    
+    size_t  type_size; 
 };
 
 
@@ -31,9 +33,15 @@ create_cell(size_t x, size_t y)
     assert(xy != NULL);
     xy->x = x;
     xy->y = y;
+    xy->type_size   = sizeof(*xy);
     return xy;
 }
 
+char
+cellcmp( CELL_XY x, CELL_XY y)
+{
+    return x != NULL && y != NULL && x->x == y->x && x->y == y->x;
+}
 
 /* MAIN MAZE INTERFACE */
 
@@ -52,7 +60,7 @@ create_maze(size_t w, size_t h)
     maze->h     = h;
     maze->walls = create_list();
     maze->sx = maze->sy = maze->ex = maze-> ey = 0;
-    
+    maze->type_size     = sizeof(*maze);
     return maze;
 }
 
@@ -111,7 +119,7 @@ print_maze(MAZE maze)
 
 /* MAZE AND CELL_XY GETTERS AND SETTERS */
 
-//yeah, returning pointer through a getter, ok
+//yeah, returning pointer through a getter, ok bad
 cell_t*       
 get_maze_arr(MAZE maze)             { return maze->maze; }
 LIST
@@ -123,15 +131,21 @@ get_maze_h(MAZE maze)               { return maze->h; }
 void
 get_maze_start_and_end	(MAZE maze, size_t *sx, size_t *sy, size_t *ex, size_t *ey) 
 { *sx = maze->sx; *sy = maze->sy; *ex = maze->ex; *ey = maze->ey;}
+size_t
+get_maze_size(MAZE maze)            { return maze->type_size; }
 
 size_t
 get_cell_x(CELL_XY cell)            { return cell->x; }
 size_t
 get_cell_y(CELL_XY cell)            { return cell->y; }
+void
+get_cell_xy(CELL_XY cell, size_t *x, size_t *y) { *x = cell->x; *y = cell->y; }
 void        
 set_cell_x(CELL_XY cell, size_t x)  { cell->x = x; }
 void 
 set_cell_y(CELL_XY cell, size_t y)  { cell->y = y; }
+size_t
+get_xy_size(CELL_XY cell)           { return cell->type_size; }
 
 
 
